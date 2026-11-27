@@ -75,4 +75,32 @@ class WordPressPublishWorker(QThread):
             self.finished_signal.emit(False, str(exc), None)
 
 
-__all__ = ["WordPressPublishWorker"]
+class YouTubeThumbnailFetchWorker(QThread):
+    """Background thread that downloads and caches a YouTube video's default thumbnail."""
+
+    finished_signal = Signal(str, str)
+
+    def __init__(self, video_id: str, thumbnail_url: str = "", timeout: float = 8.0):
+        super().__init__()
+        self.video_id = str(video_id or "").strip()
+        self.thumbnail_url = str(thumbnail_url or "").strip()
+        self.timeout = float(timeout)
+
+    def run(self):
+        try:
+            if self.isInterruptionRequested():
+                self.finished_signal.emit(self.video_id, "")
+                return
+            from plugins.wordpress.wp_thumbnail_defaults import ensure_youtube_thumbnail_cached
+
+            cached = ensure_youtube_thumbnail_cached(
+                self.video_id,
+                thumbnail_url=self.thumbnail_url,
+                timeout=self.timeout,
+            )
+            self.finished_signal.emit(self.video_id, str(cached) if cached else "")
+        except Exception:
+            self.finished_signal.emit(self.video_id, "")
+
+
+__all__ = ["WordPressPublishWorker", "YouTubeThumbnailFetchWorker"]

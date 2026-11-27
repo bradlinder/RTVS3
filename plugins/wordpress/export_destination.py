@@ -422,6 +422,12 @@ class WordPressExportDestination(ExportDestination):
             except Exception:
                 cached_authors = []
 
+        export_temp_thumbs: set[str] = set()
+        from plugins.wordpress.wp_thumbnail_defaults import (
+            materialize_post_featured_image,
+            resolve_inherited_youtube_embed,
+        )
+
         try:
             for idx, post in enumerate(ordered_wp_posts):
                 if getattr(main_window, "export_cancelled", False):
@@ -489,6 +495,28 @@ class WordPressExportDestination(ExportDestination):
                         cached_authors,
                     )
 
+                    # Materialize YouTube default thumbnails or segment video frames on demand
+                    eff_thumb_path = materialize_post_featured_image(
+                        post,
+                        main_window,
+                        post_index=idx,
+                        temp_files_out=export_temp_thumbs,
+                        allow_network=True,
+                    )
+
+                    # Inherit project-level YouTube embed onto stories when not explicitly cleared
+                    eff_yt_url = str(post.get("youtube_url") or "").strip()
+                    eff_yt_use_story_time = bool(post.get("youtube_use_story_time", True))
+                    eff_yt_stop_at_end = bool(post.get("youtube_stop_at_end", False))
+                    eff_yt_placement = str(post.get("youtube_placement") or "top")
+                    if not eff_yt_url and not post.get("youtube_explicitly_cleared"):
+                        inherited_yt = resolve_inherited_youtube_embed(main_window, post)
+                        if inherited_yt.get("youtube_url"):
+                            eff_yt_url = inherited_yt["youtube_url"]
+                            eff_yt_use_story_time = bool(post.get("youtube_use_story_time", inherited_yt["youtube_use_story_time"]))
+                            eff_yt_stop_at_end = bool(post.get("youtube_stop_at_end", inherited_yt["youtube_stop_at_end"]))
+                            eff_yt_placement = str(post.get("youtube_placement") or inherited_yt["youtube_placement"] or "top")
+
                     post_data = execute_wordpress_upload(
                         main_window=main_window,
                         client=client,
@@ -506,7 +534,7 @@ class WordPressExportDestination(ExportDestination):
                         category_ids=post.get("category_ids", []),
                         show_completion_dialog=False,
                         media_filename=media_filename,
-                        featured_image_path=post.get("featured_image"),
+                        featured_image_path=eff_thumb_path,
                         featured_image_caption=str(post.get("featured_image_caption") or ""),
                         featured_image_alt_text=str(post.get("featured_image_alt_text") or ""),
                         progress_callback=wp_progress,
@@ -528,10 +556,10 @@ class WordPressExportDestination(ExportDestination):
                         podcast_episode_type=str(post.get("podcast_episode_type") or "full"),
                         podcast_season=post.get("podcast_season"),
                         podcast_episode_number=post.get("podcast_episode_number"),
-                        youtube_url=post.get("youtube_url") or "",
-                        youtube_stop_at_end=bool(post.get("youtube_stop_at_end", False)),
-                        youtube_placement=str(post.get("youtube_placement") or "top"),
-                        youtube_use_story_time=bool(post.get("youtube_use_story_time", True)),
+                        youtube_url=eff_yt_url,
+                        youtube_stop_at_end=eff_yt_stop_at_end,
+                        youtube_placement=eff_yt_placement,
+                        youtube_use_story_time=eff_yt_use_story_time,
                         existing_post_id=post_existing_id,
                         replace_existing_audio_and_podcast=post_replace_audio,
                         post_status=target_status,
@@ -604,6 +632,12 @@ class WordPressExportDestination(ExportDestination):
                         main_window.log_activity(f"[WORDPRESS WARNING] Failed to append story index to Full Episode post #{parent_episode_post_id}: {toc_exc}")
 
         finally:
+            for tmp_thumb in list(export_temp_thumbs):
+                try:
+                    if tmp_thumb and Path(tmp_thumb).exists():
+                        Path(tmp_thumb).unlink(missing_ok=True)
+                except Exception:
+                    pass
             if hasattr(main_window, "set_processing_stage"):
                 main_window.set_processing_stage(None)
             if hasattr(main_window, "cancel_button"):

@@ -14,6 +14,7 @@ from prs_shared import INTERNAL_APP_ID, format_time, safe_filename
 from plugins.wordpress.client import WordPressClient, WordPressSettingsDialog, generate_wp_excerpt, _get_wp_password, is_wp_auth_error
 from plugins.wordpress.authors import extract_checked_author_ids, is_author_item_selected, resolve_selected_author_names
 from plugins.wordpress.wp_post_builder import capture_video_frame, build_wp_post_items, sync_featured_image_meta
+from plugins.wordpress.wp_thumb_ui import load_featured_image_from_post, on_featured_image_mode_changed
 from plugins.wordpress.wp_ui_builder import setup_wp_tab_ui
 
 class WordPressExportTabWidget(QWidget):
@@ -157,7 +158,7 @@ class WordPressExportTabWidget(QWidget):
     def _on_wp_thumb_meta_changed(self):
         ...
 
-    def _capture_wp_frame(self, pos=...):
+    def _capture_wp_frame(self, pos=..., user_initiated: bool=...):
         ...
 
     def _on_wp_browse_thumb(self):

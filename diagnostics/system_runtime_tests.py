@@ -414,6 +414,8 @@ class DiagnosticSystemRuntimeTestsMixin:
             "updater_workers.py",
             "updater_dialog.py",
             "export/story_selector.py",
+            "plugins/wordpress/wp_thumbnail_defaults.py",
+            "plugins/wordpress/wp_thumb_ui.py",
         ]
 
         violations = []

@@ -103,6 +103,7 @@ def populate_project_from_youtube_import(
         except OSError:
             est_bytes = 0
 
+    thumb_url = str(video_meta.get("thumbnail_url") or "").strip()
     proj_meta["remote_media_source"] = build_remote_media_source_record(
         provider="youtube",
         source_url=canonical_url,
@@ -113,6 +114,7 @@ def populate_project_from_youtube_import(
         title=title,
         upload_date=upload_date,
         estimated_size_bytes=est_bytes,
+        extra={"thumbnail_url": thumb_url} if thumb_url else None,
     )
     proj_meta["suggested_project_stem"] = stem
     if title:

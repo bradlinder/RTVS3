@@ -258,6 +258,9 @@ def setup_wp_tab_ui(self: Any):
     wp_thumb_controls.setSpacing(6)
 
     self.wp_rad_thumb_none = QRadioButton("None")
+    self.wp_rad_thumb_youtube = QRadioButton("YouTube default thumbnail")
+    self.wp_rad_thumb_youtube.setToolTip("Use the default thumbnail image from the YouTube video page")
+    self.wp_rad_thumb_youtube.setVisible(False)
     self.wp_rad_thumb_grab = QRadioButton("Grab frame from video")
     self.wp_rad_thumb_file = QRadioButton("Select custom image file...")
     self.wp_rad_thumb_none.setChecked(True)
@@ -268,6 +271,7 @@ def setup_wp_tab_ui(self: Any):
         self.wp_rad_thumb_grab.setToolTip("Video frame capture requires video media (audio-only file loaded)")
 
     wp_thumb_controls.addWidget(self.wp_rad_thumb_none)
+    wp_thumb_controls.addWidget(self.wp_rad_thumb_youtube)
     wp_thumb_controls.addWidget(self.wp_rad_thumb_grab)
 
     # In-dialog Frame Scrubber & Stepper for WordPress
@@ -375,6 +379,7 @@ def setup_wp_tab_ui(self: Any):
     self.wp_thumb_alt_edit.textChanged.connect(self._on_wp_thumb_meta_changed)
 
     self.wp_rad_thumb_none.toggled.connect(self._on_wp_thumb_mode_changed)
+    self.wp_rad_thumb_youtube.toggled.connect(self._on_wp_thumb_mode_changed)
     self.wp_rad_thumb_grab.toggled.connect(self._on_wp_thumb_mode_changed)
     self.wp_rad_thumb_file.toggled.connect(self._on_wp_thumb_mode_changed)
 

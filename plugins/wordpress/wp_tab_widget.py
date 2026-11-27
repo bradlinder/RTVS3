@@ -37,12 +37,20 @@ from plugins.wordpress.authors import (
     resolve_selected_author_names,
 )
 from plugins.wordpress.wp_post_builder import capture_video_frame, build_wp_post_items, sync_featured_image_meta
+from plugins.wordpress.wp_thumb_ui import load_featured_image_from_post, on_featured_image_mode_changed
 from plugins.wordpress.wp_ui_builder import setup_wp_tab_ui
 
 class WordPressExportTabWidget(QWidget):
     """Configuration and preview panel for WordPress Draft Posts."""
 
-    _THUMB_SYNC_KEYS = ("featured_image", "featured_image_mode", "featured_image_caption", "featured_image_alt_text", "frame_pos")
+    _THUMB_SYNC_KEYS = (
+        "featured_image",
+        "featured_image_mode",
+        "featured_image_user_set",
+        "featured_image_caption",
+        "featured_image_alt_text",
+        "frame_pos",
+    )
 
     def __init__(self, parent: QWidget, main_window: Any, metadata_editor_mode: bool = False):
         super().__init__(parent)
@@ -51,6 +59,7 @@ class WordPressExportTabWidget(QWidget):
         self.settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
         self._is_video_project = bool(getattr(self.main_window, "current_media_is_video", False))
         self._temp_preview_files = set()
+        self._yt_thumb_worker = None
 
         self._wp_scrub_timer = QTimer(self)
         self._wp_scrub_timer.setSingleShot(True)
@@ -584,6 +593,7 @@ class WordPressExportTabWidget(QWidget):
         pos = t_min + (val / 10000.0) * (t_max - t_min)
         post = self.wp_post_items[self._current_post_index]
         post["frame_pos"] = pos
+        post["featured_image_user_set"] = True
         self.wp_scrub_time_label.setText(format_time(pos, include_millis=True))
         self._wp_scrub_timer.start(120)
 
@@ -591,7 +601,7 @@ class WordPressExportTabWidget(QWidget):
         if 0 <= self._current_post_index < len(self.wp_post_items):
             post = self.wp_post_items[self._current_post_index]
             pos = post.get("frame_pos")
-            self._capture_wp_frame(pos=pos)
+            self._capture_wp_frame(pos=pos, user_initiated=True)
 
     def _on_wp_step(self, delta_secs: float):
         if not (0 <= self._current_post_index < len(self.wp_post_items)):
@@ -601,7 +611,7 @@ class WordPressExportTabWidget(QWidget):
         cur_pos = post.get("frame_pos", t_min)
         new_pos = max(t_min, min(t_max, cur_pos + delta_secs))
         self._sync_wp_slider_to_pos(new_pos)
-        self._capture_wp_frame(pos=new_pos)
+        self._capture_wp_frame(pos=new_pos, user_initiated=True)
 
     def _on_wp_sync_playhead(self):
         if not (0 <= self._current_post_index < len(self.wp_post_items)):
@@ -610,7 +620,7 @@ class WordPressExportTabWidget(QWidget):
         playhead_pos = float(getattr(self.main_window, "current_position", 0.0) or 0.0)
         new_pos = max(t_min, min(t_max, playhead_pos))
         self._sync_wp_slider_to_pos(new_pos)
-        self._capture_wp_frame(pos=new_pos)
+        self._capture_wp_frame(pos=new_pos, user_initiated=True)
 
     def _load_post_editor_state(self, index: int):
         if not (0 <= index < len(self.wp_post_items)):
@@ -629,50 +639,7 @@ class WordPressExportTabWidget(QWidget):
         self.wp_current_post_header.setText(f"<b>Post Settings: {html.escape(header_str)}</b>")
         self.wp_title_edit.setText(post.get("title", ""))
         self.wp_excerpt_edit.setPlainText(post.get("excerpt", ""))
-
-        mode = post.get("featured_image_mode", "none")
-        img = post.get("featured_image")
-        frame_pos = post.get("frame_pos")
-        if frame_pos is None:
-            t_min, _ = self._get_wp_post_bounds(index)
-            frame_pos = t_min
-            post["frame_pos"] = frame_pos
-
-        if mode == "grab" and self._is_video_project:
-            self.wp_rad_thumb_grab.setChecked(True)
-            self.wp_scrub_widget.setVisible(True)
-            self.wp_browse_widget.setVisible(False)
-            self._sync_wp_slider_to_pos(frame_pos)
-            if img and Path(img).exists():
-                self.wp_thumb_path_label.setText(f"Video frame captured at {format_time(frame_pos, include_millis=True)}")
-                pix = QPixmap(str(img)).scaled(160, 90, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-                self.wp_thumb_preview_label.setPixmap(pix)
-            else:
-                self.wp_thumb_path_label.setText("Frame will be captured from video")
-                self.wp_thumb_preview_label.clear()
-                self.wp_thumb_preview_label.setText("Video Frame")
-        elif mode == "file" and img:
-            self.wp_rad_thumb_file.setChecked(True)
-            self.wp_scrub_widget.setVisible(False)
-            self.wp_browse_widget.setVisible(True)
-            self.wp_thumb_path_label.setText(Path(img).name)
-            if Path(img).exists():
-                pix = QPixmap(str(img)).scaled(160, 90, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-                self.wp_thumb_preview_label.setPixmap(pix)
-            else:
-                self.wp_thumb_preview_label.clear()
-                self.wp_thumb_preview_label.setText("Image not found")
-        else:
-            self.wp_rad_thumb_none.setChecked(True)
-            self.wp_scrub_widget.setVisible(False)
-            self.wp_browse_widget.setVisible(False)
-            self.wp_thumb_path_label.setText("No image selected")
-            self.wp_thumb_preview_label.clear()
-            self.wp_thumb_preview_label.setText("No Thumbnail")
-
-        self.wp_thumb_caption_edit.setText(str(post.get("featured_image_caption") or ""))
-        self.wp_thumb_alt_edit.setText(str(post.get("featured_image_alt_text") or ""))
-        self.wp_img_meta_widget.setVisible((mode == "grab" and self._is_video_project) or (mode == "file" and bool(img)))
+        load_featured_image_from_post(self, index, post)
         self._syncing_post_editor = False
 
         self._set_editor_checked_authors(post.get("author_ids", []), post.get("author_term_ids", []))
@@ -690,44 +657,7 @@ class WordPressExportTabWidget(QWidget):
         load_episode_updater_from_post(self, post)
 
     def _on_wp_thumb_mode_changed(self):
-        if self._syncing_post_editor or not (0 <= self._current_post_index < len(self.wp_post_items)):
-            return
-        post = self.wp_post_items[self._current_post_index]
-        if self.wp_rad_thumb_none.isChecked():
-            self.wp_scrub_widget.setVisible(False)
-            self.wp_browse_widget.setVisible(False)
-            self.wp_img_meta_widget.setVisible(False)
-            self.wp_thumb_path_label.setText("No image selected")
-            self.wp_thumb_preview_label.clear()
-            self.wp_thumb_preview_label.setText("No Thumbnail")
-            post["featured_image"] = None
-            post["featured_image_mode"] = "none"
-            if hasattr(self, "_sync_post_to_project"):
-                self._sync_post_to_project(self._current_post_index)
-        elif self.wp_rad_thumb_grab.isChecked():
-            self.wp_browse_widget.setVisible(False)
-            self.wp_scrub_widget.setVisible(True)
-            self.wp_img_meta_widget.setVisible(True)
-            if post.get("frame_pos") is None:
-                t_min, _ = self._get_wp_post_bounds()
-                post["frame_pos"] = t_min
-            self._sync_wp_slider_to_pos(post["frame_pos"])
-            self._capture_wp_frame(pos=post.get("frame_pos"))
-        elif self.wp_rad_thumb_file.isChecked():
-            self.wp_scrub_widget.setVisible(False)
-            self.wp_browse_widget.setVisible(True)
-            self.wp_img_meta_widget.setVisible(True)
-            custom_path = post.get("featured_image")
-            if custom_path and Path(custom_path).exists() and post.get("featured_image_mode") == "file":
-                self.wp_thumb_path_label.setText(Path(custom_path).name)
-                pix = QPixmap(str(custom_path)).scaled(160, 90, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-                self.wp_thumb_preview_label.setPixmap(pix)
-            else:
-                self.wp_thumb_path_label.setText("Click Browse to select image file")
-                self.wp_thumb_preview_label.clear()
-                self.wp_thumb_preview_label.setText("No Image\nSelected")
-            if hasattr(self, "_sync_post_to_project"):
-                self._sync_post_to_project(self._current_post_index)
+        on_featured_image_mode_changed(self)
 
     def _on_wp_thumb_meta_changed(self):
         if self._syncing_post_editor or not (0 <= self._current_post_index < len(self.wp_post_items)):
@@ -738,7 +668,7 @@ class WordPressExportTabWidget(QWidget):
         self._update_post_list_item_label(self._current_post_index)
         self._sync_to_proj(self._current_post_index)
 
-    def _capture_wp_frame(self, pos=None):
+    def _capture_wp_frame(self, pos=None, user_initiated: bool = False):
         if not (0 <= self._current_post_index < len(self.wp_post_items)):
             return None
         if not self._is_video_project:
@@ -759,6 +689,8 @@ class WordPressExportTabWidget(QWidget):
                 pos = float(getattr(self.main_window, "current_position", 0.0) or 0.0)
 
         post["frame_pos"] = float(pos)
+        if user_initiated:
+            post["featured_image_user_set"] = True
         out_dir = Path(tempfile.gettempdir())
         out_path = out_dir / f"rtvs_wp_frame_{self._current_post_index}_{os.getpid()}.jpg"
         if capture_video_frame(str(media_file), float(pos), str(out_path), timeout=5.0):
@@ -768,7 +700,8 @@ class WordPressExportTabWidget(QWidget):
             self.wp_thumb_path_label.setText(f"Video frame captured at {format_time(pos, include_millis=True)}")
             pix = QPixmap(str(out_path)).scaled(160, 90, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
             self.wp_thumb_preview_label.setPixmap(pix)
-            if hasattr(self, "_sync_post_to_project"):
+            self._update_post_list_item_label(self._current_post_index)
+            if user_initiated and hasattr(self, "_sync_post_to_project"):
                 self._sync_post_to_project(self._current_post_index)
             return str(out_path)
         self.wp_thumb_preview_label.setText("Frame capture\nfailed")
@@ -787,11 +720,13 @@ class WordPressExportTabWidget(QWidget):
             post = self.wp_post_items[self._current_post_index]
             post["featured_image"] = fn
             post["featured_image_mode"] = "file"
+            post["featured_image_user_set"] = True
             self.wp_rad_thumb_file.setChecked(True)
             self.wp_img_meta_widget.setVisible(True)
             self.wp_thumb_path_label.setText(Path(fn).name)
             pix = QPixmap(fn).scaled(160, 90, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
             self.wp_thumb_preview_label.setPixmap(pix)
+            self._update_post_list_item_label(self._current_post_index)
             if hasattr(self, "_sync_post_to_project"):
                 self._sync_post_to_project(self._current_post_index)
 
@@ -807,7 +742,16 @@ class WordPressExportTabWidget(QWidget):
             self._temp_preview_files.clear()
 
     def closeEvent(self, event: Any) -> None:
-        """Persist current post state and clean up temp files on widget/dialog closure."""
+        """Persist current post state, stop background thumbnail workers, and clean up temp files."""
+        worker = getattr(self, "_yt_thumb_worker", None)
+        if worker is not None:
+            try:
+                if worker.isRunning():
+                    worker.requestInterruption()
+                    worker.wait(500)
+            except RuntimeError:
+                pass
+            self._yt_thumb_worker = None
         try:
             if hasattr(self, "save_all_posts_to_project"):
                 self.save_all_posts_to_project()

@@ -8,6 +8,12 @@ from typing import Any, Dict, List, Optional
 
 from prs_shared import ffmpeg_path
 from plugins.wordpress.client import generate_wp_excerpt
+from plugins.wordpress.wp_thumbnail_defaults import (
+    compute_default_segment_frame_pos,
+    get_youtube_source_info,
+    resolve_inherited_youtube_embed,
+    should_apply_youtube_featured_default,
+)
 
 
 def capture_video_frame(video_path: str, timestamp: float, output_path: str, timeout: float = 10.0) -> bool:
@@ -77,6 +83,8 @@ def build_wp_post_items(
     audio_file = getattr(main_window, "audio_file", None)
     base_name = Path(audio_file).stem if audio_file else "Draft Story"
     stories = getattr(main_window, "stories", []) or []
+    is_video = bool(getattr(main_window, "current_media_is_video", False))
+    yt_src = get_youtube_source_info(main_window)
 
     existing_by_start: Dict[Any, Dict[str, Any]] = {}
     for old_item in (existing_items or []):
@@ -94,32 +102,68 @@ def build_wp_post_items(
 
     def build_story_item(idx: int, st: Any) -> Dict[str, Any]:
         st_title = st.title if getattr(st, "title", None) else f"{base_name} - Story {idx + 1}"
-        raw_text = get_primary_text_slice(main_window, primary_lang, getattr(st, "start", 0.0), getattr(st, "end", None))
+        st_start = getattr(st, "start", None)
+        st_end = getattr(st, "end", None)
+        raw_text = get_primary_text_slice(main_window, primary_lang, st_start if st_start is not None else 0.0, st_end)
         default_excerpt = generate_wp_excerpt(raw_text, 55)
         st_meta = getattr(st, "metadata", {}) if isinstance(getattr(st, "metadata", None), dict) else {}
         wp_meta = st_meta.get("wordpress", {}) if isinstance(st_meta.get("wordpress"), dict) else {}
         season_val = wp_meta.get("podcast_season") if wp_meta.get("podcast_season") is not None else wp_meta.get("season")
         ep_num_val = wp_meta.get("podcast_episode_number") if wp_meta.get("podcast_episode_number") is not None else wp_meta.get("episode_number")
 
+        # Inherit project-level YouTube embed onto individual stories unless explicitly cleared
+        yt_explicitly_cleared = bool(wp_meta.get("youtube_explicitly_cleared", False))
+        story_yt_url = str(wp_meta.get("youtube_url") or "").strip()
+        story_yt_vid = str(wp_meta.get("youtube_video_id") or "").strip()
+        inherited_yt = resolve_inherited_youtube_embed(main_window, wp_meta)
+        if not story_yt_url and not yt_explicitly_cleared and inherited_yt["youtube_url"]:
+            story_yt_url = inherited_yt["youtube_url"]
+            story_yt_vid = inherited_yt["youtube_video_id"]
+            yt_use_story_time = bool(wp_meta.get("youtube_use_story_time", inherited_yt["youtube_use_story_time"]))
+            yt_stop_at_end = bool(wp_meta.get("youtube_stop_at_end", inherited_yt["youtube_stop_at_end"]))
+            yt_placement = str(wp_meta.get("youtube_placement") or inherited_yt["youtube_placement"] or "top")
+        else:
+            yt_use_story_time = bool(wp_meta.get("youtube_use_story_time", True))
+            yt_stop_at_end = bool(wp_meta.get("youtube_stop_at_end", False))
+            yt_placement = str(wp_meta.get("youtube_placement") or "top")
+
+        # YouTube-source individual segments default to grabbing a video frame inside [st_start, st_end]
+        default_frame_pos = compute_default_segment_frame_pos(
+            st_start,
+            st_end,
+            fallback=float(getattr(main_window, "current_position", 0.0) or 0.0),
+        )
+        feat_user_set = bool(wp_meta.get("featured_image_user_set") or st_meta.get("featured_image_user_set") or False)
+        feat_img = wp_meta.get("featured_image") if wp_meta.get("featured_image") is not None else st_meta.get("featured_image")
+        feat_mode = str(wp_meta.get("featured_image_mode") or st_meta.get("featured_image_mode") or "none")
+        if yt_src["is_youtube_source"] and is_video and should_apply_youtube_featured_default(wp_meta, st_meta):
+            feat_mode = "grab"
+            feat_img = None
+            frame_pos = default_frame_pos
+        else:
+            frame_pos = float(wp_meta.get("frame_pos") if wp_meta.get("frame_pos") is not None else default_frame_pos)
+
         item: Dict[str, Any] = {
             "task_label": f"Story {idx + 1}",
             "title": wp_meta.get("title") or st_title,
             "excerpt": wp_meta.get("excerpt") or st_meta.get("excerpt") or default_excerpt,
-            "start": getattr(st, "start", None),
-            "end": getattr(st, "end", None),
+            "start": st_start,
+            "end": st_end,
             "story_index": idx,
+            "is_parent_episode": False,
             "fade_in": float(getattr(st, "fade_in", 0.0) or 0.0),
             "fade_out": float(getattr(st, "fade_out", 0.0) or 0.0),
             "fade_curve": str(getattr(st, "fade_curve", "linear") or "linear"),
-            "frame_pos": float(wp_meta.get("frame_pos") if wp_meta.get("frame_pos") is not None else (getattr(st, "start", 0.0) or (getattr(main_window, "current_position", 0.0) or 0.0))),
+            "frame_pos": frame_pos,
             "author_ids": list(wp_meta.get("author_ids") or []),
             "author_term_ids": list(wp_meta.get("author_term_ids") or []),
             "category_ids": list(wp_meta.get("category_ids") or []),
             "status": wp_meta.get("status", "draft"),
             "slug": wp_meta.get("slug", ""),
             "tags": list(wp_meta.get("tags") or st_meta.get("tags") or []),
-            "featured_image": wp_meta.get("featured_image") if wp_meta.get("featured_image") is not None else st_meta.get("featured_image"),
-            "featured_image_mode": wp_meta.get("featured_image_mode") or st_meta.get("featured_image_mode") or "none",
+            "featured_image": feat_img,
+            "featured_image_mode": feat_mode,
+            "featured_image_user_set": feat_user_set,
             "featured_image_caption": str(wp_meta.get("featured_image_caption") if wp_meta.get("featured_image_caption") is not None else (st_meta.get("featured_image_caption") or "")),
             "featured_image_alt_text": str(wp_meta.get("featured_image_alt_text") if wp_meta.get("featured_image_alt_text") is not None else (st_meta.get("featured_image_alt_text") or "")),
             "is_podcast": bool(wp_meta.get("is_podcast", False)),
@@ -132,11 +176,12 @@ def build_wp_post_items(
             "season": season_val,
             "podcast_episode_number": ep_num_val,
             "episode_number": ep_num_val,
-            "youtube_url": str(wp_meta.get("youtube_url") or ""),
-            "youtube_video_id": str(wp_meta.get("youtube_video_id") or ""),
-            "youtube_use_story_time": bool(wp_meta.get("youtube_use_story_time", True)),
-            "youtube_stop_at_end": bool(wp_meta.get("youtube_stop_at_end", False)),
-            "youtube_placement": str(wp_meta.get("youtube_placement") or "top"),
+            "youtube_url": story_yt_url,
+            "youtube_video_id": story_yt_vid,
+            "youtube_explicitly_cleared": yt_explicitly_cleared,
+            "youtube_use_story_time": yt_use_story_time,
+            "youtube_stop_at_end": yt_stop_at_end,
+            "youtube_placement": yt_placement,
             "existing_post_url": str(wp_meta.get("existing_post_url") or ""),
             "existing_post_id": wp_meta.get("existing_post_id"),
             "existing_post_slug": str(wp_meta.get("existing_post_slug") or ""),
@@ -152,13 +197,17 @@ def build_wp_post_items(
             item["author_ids"] = list(existing.get("author_ids", item["author_ids"]))
             item["author_term_ids"] = list(existing.get("author_term_ids", item["author_term_ids"]))
             item["category_ids"] = list(existing.get("category_ids", item["category_ids"]))
-            item["featured_image"] = existing.get("featured_image", item["featured_image"])
-            item["featured_image_mode"] = existing.get("featured_image_mode", item["featured_image_mode"])
+            ex_feat_mode = existing.get("featured_image_mode")
+            ex_feat_user_set = bool(existing.get("featured_image_user_set", False))
+            if ex_feat_user_set or ex_feat_mode in ("grab", "file", "youtube") or item["featured_image_mode"] == "none":
+                item["featured_image"] = existing.get("featured_image", item["featured_image"])
+                item["featured_image_mode"] = ex_feat_mode if ex_feat_mode is not None else item["featured_image_mode"]
+                item["featured_image_user_set"] = ex_feat_user_set
+                item["frame_pos"] = existing.get("frame_pos", item["frame_pos"])
             if "featured_image_caption" in existing:
                 item["featured_image_caption"] = str(existing.get("featured_image_caption") or "")
             if "featured_image_alt_text" in existing:
                 item["featured_image_alt_text"] = str(existing.get("featured_image_alt_text") or "")
-            item["frame_pos"] = existing.get("frame_pos", item["frame_pos"])
             item["story_index"] = idx
             if "fade_in" in existing and existing["fade_in"] is not None:
                 item["fade_in"] = float(existing["fade_in"])
@@ -186,10 +235,11 @@ def build_wp_post_items(
                 ep_ex = existing.get("podcast_episode_number") if existing.get("podcast_episode_number") is not None else existing.get("episode_number")
                 item["podcast_episode_number"] = ep_ex
                 item["episode_number"] = ep_ex
-            if "youtube_url" in existing:
+            ex_yt_cleared = bool(existing.get("youtube_explicitly_cleared", False))
+            if existing.get("youtube_url") or ex_yt_cleared:
                 item["youtube_url"] = str(existing.get("youtube_url") or "")
-            if "youtube_video_id" in existing:
                 item["youtube_video_id"] = str(existing.get("youtube_video_id") or "")
+                item["youtube_explicitly_cleared"] = ex_yt_cleared
             if "youtube_use_story_time" in existing:
                 item["youtube_use_story_time"] = bool(existing.get("youtube_use_story_time", True))
             if "youtube_stop_at_end" in existing:
@@ -210,8 +260,23 @@ def build_wp_post_items(
         wp_meta = proj_meta.get("wordpress", {}) if isinstance(proj_meta.get("wordpress"), dict) else {}
         season_val = wp_meta.get("podcast_season") if wp_meta.get("podcast_season") is not None else wp_meta.get("season")
         ep_num_val = wp_meta.get("podcast_episode_number") if wp_meta.get("podcast_episode_number") is not None else wp_meta.get("episode_number")
-        is_video = bool(getattr(main_window, "current_media_is_video", False))
         default_is_podcast = False if is_video else True
+
+        yt_explicitly_cleared = bool(wp_meta.get("youtube_explicitly_cleared", False))
+        full_yt_url = str(wp_meta.get("youtube_url") or "").strip()
+        full_yt_vid = str(wp_meta.get("youtube_video_id") or "").strip()
+        if not full_yt_url and not yt_explicitly_cleared and yt_src["is_youtube_source"] and yt_src["source_url"]:
+            full_yt_url = yt_src["source_url"]
+            full_yt_vid = yt_src["video_id"]
+
+        # YouTube-source Full Episode defaults to the YouTube page's default thumbnail
+        feat_user_set = bool(wp_meta.get("featured_image_user_set") or proj_meta.get("featured_image_user_set") or False)
+        feat_img = wp_meta.get("featured_image") if wp_meta.get("featured_image") is not None else proj_meta.get("featured_image")
+        feat_mode = str(wp_meta.get("featured_image_mode") or proj_meta.get("featured_image_mode") or "none")
+        if yt_src["is_youtube_source"] and yt_src["video_id"] and should_apply_youtube_featured_default(wp_meta, proj_meta):
+            feat_mode = "youtube"
+            feat_img = yt_src["thumbnail_path"] or None
+
         item: Dict[str, Any] = {
             "task_label": "Full Episode",
             "title": wp_meta.get("title") or proj_meta.get("title") or base_name,
@@ -219,6 +284,7 @@ def build_wp_post_items(
             "start": None,
             "end": None,
             "story_index": None,
+            "is_parent_episode": True,
             "fade_in": 0.0,
             "fade_out": 0.0,
             "fade_curve": "linear",
@@ -229,8 +295,9 @@ def build_wp_post_items(
             "status": wp_meta.get("status", "draft"),
             "slug": wp_meta.get("slug", ""),
             "tags": list(wp_meta.get("tags") or proj_meta.get("tags") or []),
-            "featured_image": wp_meta.get("featured_image") if wp_meta.get("featured_image") is not None else proj_meta.get("featured_image"),
-            "featured_image_mode": wp_meta.get("featured_image_mode") or proj_meta.get("featured_image_mode") or "none",
+            "featured_image": feat_img,
+            "featured_image_mode": feat_mode,
+            "featured_image_user_set": feat_user_set,
             "featured_image_caption": str(wp_meta.get("featured_image_caption") if wp_meta.get("featured_image_caption") is not None else (proj_meta.get("featured_image_caption") or "")),
             "featured_image_alt_text": str(wp_meta.get("featured_image_alt_text") if wp_meta.get("featured_image_alt_text") is not None else (proj_meta.get("featured_image_alt_text") or "")),
             "is_podcast": bool(wp_meta.get("is_podcast", default_is_podcast)),
@@ -243,8 +310,9 @@ def build_wp_post_items(
             "season": season_val,
             "podcast_episode_number": ep_num_val,
             "episode_number": ep_num_val,
-            "youtube_url": str(wp_meta.get("youtube_url") or ""),
-            "youtube_video_id": str(wp_meta.get("youtube_video_id") or ""),
+            "youtube_url": full_yt_url,
+            "youtube_video_id": full_yt_vid,
+            "youtube_explicitly_cleared": yt_explicitly_cleared,
             "youtube_use_story_time": bool(wp_meta.get("youtube_use_story_time", True)),
             "youtube_stop_at_end": bool(wp_meta.get("youtube_stop_at_end", False)),
             "youtube_placement": str(wp_meta.get("youtube_placement") or "top"),
@@ -262,8 +330,8 @@ def build_wp_post_items(
             existing = existing_items[0]
             is_full_existing = bool(existing.get("task_label") == "Full Episode" or existing.get("start") is None)
         if existing:
-            # Only copy title, excerpt, and podcast settings if the existing item was actually a Full Episode post,
-            # never overwrite the Full Episode with child story properties!
+            # Only copy title, excerpt, podcast, YouTube, and featured image settings if the existing item
+            # was actually a Full Episode post; never overwrite Full Episode with child story properties!
             if is_full_existing:
                 item["title"] = existing.get("title") or item["title"]
                 item["excerpt"] = existing.get("excerpt") or item["excerpt"]
@@ -287,10 +355,11 @@ def build_wp_post_items(
                     ep_ex = existing.get("podcast_episode_number") if existing.get("podcast_episode_number") is not None else existing.get("episode_number")
                     item["podcast_episode_number"] = ep_ex
                     item["episode_number"] = ep_ex
-                if "youtube_url" in existing:
+                ex_yt_cleared = bool(existing.get("youtube_explicitly_cleared", False))
+                if existing.get("youtube_url") or ex_yt_cleared:
                     item["youtube_url"] = str(existing.get("youtube_url") or "")
-                if "youtube_video_id" in existing:
                     item["youtube_video_id"] = str(existing.get("youtube_video_id") or "")
+                    item["youtube_explicitly_cleared"] = ex_yt_cleared
                 if "youtube_use_story_time" in existing:
                     item["youtube_use_story_time"] = bool(existing.get("youtube_use_story_time", True))
                 if "youtube_stop_at_end" in existing:
@@ -300,16 +369,20 @@ def build_wp_post_items(
                 for k in ("existing_post_url", "existing_post_id", "existing_post_slug", "existing_post_status", "existing_post_date", "replace_existing_audio", "excerpt_from_existing"):
                     if k in existing:
                         item[k] = existing[k]
+                ex_feat_mode = existing.get("featured_image_mode")
+                ex_feat_user_set = bool(existing.get("featured_image_user_set", False))
+                if ex_feat_user_set or ex_feat_mode in ("grab", "file", "youtube") or item["featured_image_mode"] == "none":
+                    item["featured_image"] = existing.get("featured_image", item["featured_image"])
+                    item["featured_image_mode"] = ex_feat_mode if ex_feat_mode is not None else item["featured_image_mode"]
+                    item["featured_image_user_set"] = ex_feat_user_set
+                    item["frame_pos"] = existing.get("frame_pos", item["frame_pos"])
+                if "featured_image_caption" in existing:
+                    item["featured_image_caption"] = str(existing.get("featured_image_caption") or "")
+                if "featured_image_alt_text" in existing:
+                    item["featured_image_alt_text"] = str(existing.get("featured_image_alt_text") or "")
             item["author_ids"] = list(existing.get("author_ids", item["author_ids"]))
             item["author_term_ids"] = list(existing.get("author_term_ids", item["author_term_ids"]))
             item["category_ids"] = list(existing.get("category_ids", item["category_ids"]))
-            item["featured_image"] = existing.get("featured_image", item["featured_image"])
-            item["featured_image_mode"] = existing.get("featured_image_mode", item["featured_image_mode"])
-            if "featured_image_caption" in existing:
-                item["featured_image_caption"] = str(existing.get("featured_image_caption") or "")
-            if "featured_image_alt_text" in existing:
-                item["featured_image_alt_text"] = str(existing.get("featured_image_alt_text") or "")
-            item["frame_pos"] = existing.get("frame_pos", item["frame_pos"])
         return item
 
     if scope == "full":
@@ -360,18 +433,21 @@ def sync_featured_image_meta(
     post: Dict[str, Any],
     container_meta: Optional[Dict[str, Any]] = None,
 ) -> None:
-    """Persist featured image path, mode, caption, alt text, and frame position into project metadata."""
+    """Persist featured image path, mode, user-set flag, caption, alt text, and frame position."""
     img = post.get("featured_image")
     mode = post.get("featured_image_mode", "none")
+    user_set = bool(post.get("featured_image_user_set", False))
     caption = str(post.get("featured_image_caption") or "")
     alt_text = str(post.get("featured_image_alt_text") or "")
     wp_meta["featured_image"] = img
     wp_meta["featured_image_mode"] = mode
+    wp_meta["featured_image_user_set"] = user_set
     wp_meta["featured_image_caption"] = caption
     wp_meta["featured_image_alt_text"] = alt_text
     wp_meta["frame_pos"] = post.get("frame_pos")
     if isinstance(container_meta, dict):
         container_meta["featured_image"] = img
         container_meta["featured_image_mode"] = mode
+        container_meta["featured_image_user_set"] = user_set
         container_meta["featured_image_caption"] = caption
         container_meta["featured_image_alt_text"] = alt_text

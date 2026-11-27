@@ -602,5 +602,199 @@ class DiagnosticExportWordPressCoreMixin:
         if tab.wp_rad_yt_pos_top.isEnabled() or tab.wp_rad_yt_pos_bottom.isEnabled():
             raise AssertionError("Expected placement radios to be disabled again when YouTube URL is cleared")
 
+        # 6. YouTube-source featured image defaults & post-import story YouTube embed inheritance (v3.10.21-beta)
+        import tempfile
+        from plugins.youtube.yt_import_dialog import populate_project_from_youtube_import
+        from plugins.wordpress.wp_thumbnail_defaults import (
+            compute_default_segment_frame_pos,
+            ensure_youtube_thumbnail_cached,
+            materialize_post_featured_image,
+        )
+        from plugins.wordpress.youtube_embed import format_post_list_label_and_tooltip
+
+        with tempfile.TemporaryDirectory(prefix="rtvs_yt_wp_defaults_") as tmp_dir:
+            tmp_root = Path(tmp_dir)
+            fake_video = tmp_root / "episode_video.mp4"
+            fake_video.write_bytes(b"\x00" * 64)
+            cache_root = tmp_root / "remote_cache"
+
+            class DummyStoryObj:
+                def __init__(self, start, end, title, metadata=None):
+                    self.start = start
+                    self.end = end
+                    self.title = title
+                    self.metadata = metadata if metadata is not None else {}
+                    self.fade_in = 0.0
+                    self.fade_out = 0.0
+                    self.fade_curve = "linear"
+
+            class YouTubeSourceWindow:
+                def __init__(self):
+                    self.audio_file = str(fake_video)
+                    self.current_media_is_video = True
+                    self.stories = []
+                    self.project_metadata = {}
+                    self.duration = 300.0
+                    self.current_position = 0.0
+                    self.current_selected_story_indices = [0]
+                    self.transcript = [
+                        {"start": 10.0, "end": 85.0, "text": "First story segment text.", "speaker": "Host"},
+                        {"start": 120.0, "end": 230.0, "text": "Second story segment text.", "speaker": "Reporter"},
+                    ]
+
+                def _get_transcript_text_slice(self, start, end):
+                    return "Broadcast transcript text."
+
+            yt_win = YouTubeSourceWindow()
+            populate_project_from_youtube_import(
+                yt_win,
+                {
+                    "video_id": "dQw4w9WgXcQ",
+                    "canonical_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                    "title": "Evening Broadcast",
+                    "description": "Tonight's episode summary.",
+                    "upload_date": "2026-10-15",
+                    "thumbnail_url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
+                },
+                fake_video,
+                quality_preset="1080p",
+                cache_key="youtube:dQw4w9WgXcQ:1080p",
+            )
+            if yt_win.project_metadata.get("remote_media_source", {}).get("thumbnail_url") != "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg":
+                raise AssertionError("Expected populate_project_from_youtube_import to preserve thumbnail_url in remote_media_source")
+
+            # Simulate stories created AFTER YouTube import (including one with legacy passive empty metadata)
+            yt_win.stories = [
+                DummyStoryObj(10.0, 90.0, "School Closures"),
+                DummyStoryObj(120.0, 240.0, "Wrongful Convictions", metadata={"wordpress": {"youtube_url": "", "featured_image_mode": "none"}}),
+            ]
+            built = build_wp_post_items(yt_win, "full_and_all_stories", "en", [])
+            if len(built) != 3:
+                raise AssertionError(f"Expected 3 posts (Full + 2 stories), got {len(built)}")
+
+            full_p, st1_p, st2_p = built
+            # Full Episode defaults to YouTube page default thumbnail + YouTube embed
+            if full_p.get("featured_image_mode") != "youtube":
+                raise AssertionError(f"Expected Full Episode featured_image_mode='youtube', got {full_p.get('featured_image_mode')!r}")
+            if full_p.get("youtube_video_id") != "dQw4w9WgXcQ":
+                raise AssertionError(f"Expected Full Episode youtube_video_id='dQw4w9WgXcQ', got {full_p.get('youtube_video_id')!r}")
+
+            # Individual segments MUST inherit YouTube URL/ID and default to grabbing a frame inside [start, end]
+            for st_p, lo, hi in ((st1_p, 10.0, 90.0), (st2_p, 120.0, 240.0)):
+                if st_p.get("youtube_url") != "https://www.youtube.com/watch?v=dQw4w9WgXcQ" or st_p.get("youtube_video_id") != "dQw4w9WgXcQ":
+                    raise AssertionError(f"Story '{st_p.get('title')}' failed to inherit YouTube embed: {st_p}")
+                if st_p.get("featured_image_mode") != "grab":
+                    raise AssertionError(f"Story '{st_p.get('title')}' expected featured_image_mode='grab', got {st_p.get('featured_image_mode')!r}")
+                fp = float(st_p.get("frame_pos"))
+                if not (lo <= fp <= hi):
+                    raise AssertionError(f"Story '{st_p.get('title')}' frame_pos {fp} is outside [{lo}, {hi}]")
+
+            # Verify switching from single-story selected_stories back to full does not clobber Full Episode featured mode
+            rebuilt_full = build_wp_post_items(yt_win, "full", "en", [st1_p])
+            if rebuilt_full[0].get("featured_image_mode") != "youtube":
+                raise AssertionError(f"Switching scope from single story to full clobbered Full Episode mode: {rebuilt_full[0].get('featured_image_mode')!r}")
+
+            # Explicit user overrides ('none' featured image and explicitly cleared YouTube URL) must be honored
+            yt_win.stories[1].metadata["wordpress"]["featured_image_user_set"] = True
+            yt_win.stories[1].metadata["wordpress"]["featured_image_mode"] = "none"
+            yt_win.stories[1].metadata["wordpress"]["youtube_explicitly_cleared"] = True
+            built_override = build_wp_post_items(yt_win, "all_stories", "en", [])
+            if built_override[1].get("featured_image_mode") != "none":
+                raise AssertionError("Expected explicit user featured_image_mode='none' to be preserved")
+            if built_override[1].get("youtube_url"):
+                raise AssertionError("Expected explicit youtube_explicitly_cleared=True to prevent YouTube URL inheritance")
+
+            # Verify offline-safe YouTube thumbnail download fallback + atomic caching + materialization
+            fake_jpeg = b"\xff\xd8\xff\xe0" + (b"\x00" * 2048)
+            fetched_urls = []
+            def mock_fetcher(url, timeout):
+                fetched_urls.append(url)
+                if "maxresdefault.jpg" in url or "sddefault.jpg" in url:
+                    raise RuntimeError("404 Not Found")
+                return fake_jpeg
+
+            cached_thumb = ensure_youtube_thumbnail_cached(
+                "dQw4w9WgXcQ",
+                thumbnail_url="https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
+                cache_dir=cache_root,
+                fetcher=mock_fetcher,
+            )
+            if not cached_thumb or not cached_thumb.is_file() or cached_thumb.read_bytes() != fake_jpeg:
+                raise AssertionError(f"Expected fallback YouTube thumbnail cached cleanly, got {cached_thumb}")
+            if not any("hqdefault.jpg" in u for u in fetched_urls):
+                raise AssertionError(f"Expected hqdefault.jpg fallback to be attempted, fetched: {fetched_urls}")
+
+            mat_full = materialize_post_featured_image(full_p, yt_win, post_index=0, allow_network=True, cache_dir=cache_root, fetcher=mock_fetcher)
+            if not mat_full or Path(mat_full) != cached_thumb:
+                raise AssertionError(f"Expected Full Episode materialization to resolve cached YouTube thumbnail, got {mat_full}")
+
+            grabbed_positions = []
+            def mock_frame_capturer(vid_path, ts, out_path, timeout=8.0):
+                grabbed_positions.append(ts)
+                Path(out_path).write_bytes(fake_jpeg)
+                return True
+
+            temp_grabs = set()
+            try:
+                mat_story = materialize_post_featured_image(
+                    st1_p,
+                    yt_win,
+                    post_index=1,
+                    temp_files_out=temp_grabs,
+                    frame_capturer=mock_frame_capturer,
+                )
+                if not mat_story or not Path(mat_story).is_file():
+                    raise AssertionError("Expected Story 1 featured image frame to be materialized on demand")
+                if not grabbed_positions or not (10.0 <= grabbed_positions[0] <= 90.0):
+                    raise AssertionError(f"Expected captured Story 1 frame inside [10.0, 90.0], got {grabbed_positions}")
+
+                # Verify list badge displays [YT, Img] for both Full Episode and Story 1
+                mock_list_tab = type("MockBadgeTab", (), {
+                    "wp_post_items": [full_p, st1_p],
+                    "wp_cb_include_audio": None,
+                })()
+                lbl_full, tt_full = format_post_list_label_and_tooltip(mock_list_tab, 0)
+                lbl_st1, tt_st1 = format_post_list_label_and_tooltip(mock_list_tab, 1)
+                if "[YT, Img]" not in lbl_full or "YouTube default thumbnail" not in tt_full:
+                    raise AssertionError(f"Unexpected Full Episode badge/tooltip: {lbl_full!r} / {tt_full!r}")
+                if "[YT, Img]" not in lbl_st1 or "Video frame" not in tt_st1:
+                    raise AssertionError(f"Unexpected Story 1 badge/tooltip: {lbl_st1!r} / {tt_st1!r}")
+
+                # Verify execute_wordpress_upload embeds YouTube iframe AND uploads featured image for Story 1
+                uploaded_media = []
+                created_payloads = []
+                class MediaMockClient:
+                    site_url = "https://example.com"
+                    def upload_media(self, path, filename=None):
+                        uploaded_media.append(str(path))
+                        return {"id": 777, "source_url": f"https://example.com/wp-content/{filename}"}
+                    def create_post(self, title, content, **kwargs):
+                        created_payloads.append({"title": title, "content": content, **kwargs})
+                        return {"id": 202, "link": "https://example.com/?p=202"}
+
+                execute_wordpress_upload(
+                    main_window=yt_win,
+                    client=MediaMockClient(),
+                    post_title=st1_p["title"],
+                    start=st1_p["start"],
+                    end=st1_p["end"],
+                    include_audio=False,
+                    featured_image_path=mat_story,
+                    youtube_url=st1_p["youtube_url"],
+                    youtube_use_story_time=st1_p["youtube_use_story_time"],
+                    youtube_placement=st1_p["youtube_placement"],
+                )
+                if not uploaded_media or created_payloads[-1].get("featured_media_id") != 777:
+                    raise AssertionError(f"Expected Story 1 featured image upload (ID 777), got {created_payloads}")
+                if "https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0&amp;start=10" not in created_payloads[-1]["content"]:
+                    raise AssertionError(f"Expected Story 1 YouTube embed with start=10, got: {created_payloads[-1]['content']}")
+            finally:
+                for p_tmp in temp_grabs:
+                    Path(p_tmp).unlink(missing_ok=True)
+
+            # Edge-case check: compute_default_segment_frame_pos stays strictly inside short and long segments
+            if not (5.0 <= compute_default_segment_frame_pos(5.0, 5.1) <= 5.1):
+                raise AssertionError("Short segment default frame position escaped [start, end]")
+
         item.status = "PASS"
-        item.message = "YouTube embed URL extraction, iframe generation, video project defaults, placement, and auto-dimming verified"
+        item.message = "YouTube embed inheritance, YouTube-source featured image defaults, thumbnail caching, segment frame capture, and placement verified"

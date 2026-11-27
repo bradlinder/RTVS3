@@ -388,6 +388,8 @@ def load_youtube_from_post(tab_widget: Any, post: Dict[str, Any]) -> None:
         return
 
     tab_widget.wp_yt_url_edit.blockSignals(True)
+    if hasattr(tab_widget, "wp_cb_yt_apply_all"):
+        tab_widget.wp_cb_yt_apply_all.blockSignals(True)
     if hasattr(tab_widget, "wp_cb_yt_use_story_time"):
         tab_widget.wp_cb_yt_use_story_time.blockSignals(True)
     if hasattr(tab_widget, "wp_cb_yt_stop_at_end"):
@@ -398,6 +400,11 @@ def load_youtube_from_post(tab_widget: Any, post: Dict[str, Any]) -> None:
 
     url = post.get("youtube_url") or ""
     tab_widget.wp_yt_url_edit.setText(url)
+
+    if hasattr(tab_widget, "wp_cb_yt_apply_all"):
+        proj_meta = getattr(getattr(tab_widget, "main_window", None), "project_metadata", None)
+        wp_proj = proj_meta.get("wordpress", {}) if isinstance(proj_meta, dict) and isinstance(proj_meta.get("wordpress"), dict) else {}
+        tab_widget.wp_cb_yt_apply_all.setChecked(bool(wp_proj.get("youtube_apply_all", True)))
 
     if hasattr(tab_widget, "wp_cb_yt_use_story_time"):
         use_time = post.get("youtube_use_story_time")
@@ -422,6 +429,8 @@ def load_youtube_from_post(tab_widget: Any, post: Dict[str, Any]) -> None:
             tab_widget.wp_rad_yt_pos_top.setChecked(True)
 
     tab_widget.wp_yt_url_edit.blockSignals(False)
+    if hasattr(tab_widget, "wp_cb_yt_apply_all"):
+        tab_widget.wp_cb_yt_apply_all.blockSignals(False)
     if hasattr(tab_widget, "wp_cb_yt_use_story_time"):
         tab_widget.wp_cb_yt_use_story_time.blockSignals(False)
     if hasattr(tab_widget, "wp_cb_yt_stop_at_end"):
@@ -439,6 +448,7 @@ def sync_youtube_to_meta(target_meta: Dict[str, Any], post: Dict[str, Any]) -> N
         return
     target_meta["youtube_url"] = post.get("youtube_url", "")
     target_meta["youtube_video_id"] = post.get("youtube_video_id", "")
+    target_meta["youtube_explicitly_cleared"] = bool(post.get("youtube_explicitly_cleared", False))
     target_meta["youtube_use_story_time"] = post.get("youtube_use_story_time", True)
     target_meta["youtube_stop_at_end"] = post.get("youtube_stop_at_end", False)
     target_meta["youtube_placement"] = post.get("youtube_placement", "top")
@@ -453,18 +463,22 @@ def _on_youtube_url_changed(tab_widget: Any, text: str) -> None:
 
     url = text.strip()
     vid_id, _ = extract_youtube_video_id(url)
+    cleared = not bool(url)
     apply_all = hasattr(tab_widget, "wp_cb_yt_apply_all") and tab_widget.wp_cb_yt_apply_all.isChecked()
 
     if apply_all and hasattr(tab_widget, "wp_post_items"):
         for p in tab_widget.wp_post_items:
             p["youtube_url"] = url
             p["youtube_video_id"] = vid_id
+            p["youtube_explicitly_cleared"] = cleared
         # Also store to project_metadata.wordpress
         proj_meta = getattr(tab_widget.main_window, "project_metadata", None)
         if isinstance(proj_meta, dict):
             wp_meta = proj_meta.setdefault("wordpress", {})
             wp_meta["youtube_url"] = url
             wp_meta["youtube_video_id"] = vid_id
+            wp_meta["youtube_apply_all"] = True
+            wp_meta["youtube_explicitly_cleared"] = cleared
         # Also store to all stories
         stories = getattr(tab_widget.main_window, "stories", []) or []
         for st in stories:
@@ -473,9 +487,16 @@ def _on_youtube_url_changed(tab_widget: Any, text: str) -> None:
             st_wp = st.metadata.setdefault("wordpress", {})
             st_wp["youtube_url"] = url
             st_wp["youtube_video_id"] = vid_id
+            st_wp["youtube_explicitly_cleared"] = cleared
     else:
         post["youtube_url"] = url
         post["youtube_video_id"] = vid_id
+        post["youtube_explicitly_cleared"] = cleared
+
+    if hasattr(tab_widget, "wp_rad_thumb_youtube"):
+        from plugins.wordpress.wp_thumbnail_defaults import resolve_post_youtube_video_id
+        has_yt_thumb = bool(resolve_post_youtube_video_id(post, getattr(tab_widget, "main_window", None)))
+        tab_widget.wp_rad_thumb_youtube.setVisible(has_yt_thumb)
 
     update_youtube_status_label(tab_widget)
 
@@ -490,6 +511,11 @@ def _on_youtube_url_changed(tab_widget: Any, text: str) -> None:
 
 
 def _on_youtube_apply_all_toggled(tab_widget: Any, checked: bool) -> None:
+    if getattr(tab_widget, "_syncing_post_editor", False):
+        return
+    proj_meta = getattr(getattr(tab_widget, "main_window", None), "project_metadata", None)
+    if isinstance(proj_meta, dict):
+        proj_meta.setdefault("wordpress", {})["youtube_apply_all"] = bool(checked)
     if checked:
         url = (tab_widget.wp_yt_url_edit.text() if hasattr(tab_widget, "wp_yt_url_edit") else "").strip()
         if url:
@@ -553,8 +579,12 @@ def format_post_list_label_and_tooltip(tab_widget: Any, idx: int) -> Tuple[str, 
     is_podcast = bool(post.get("is_podcast", False))
     inc_audio = getattr(tab_widget, "wp_cb_include_audio", None) and tab_widget.wp_cb_include_audio.isChecked()
     has_yt = bool(post.get("youtube_url") or post.get("youtube_video_id"))
-    img_mode = post.get("featured_image_mode", "none")
-    has_img = bool(img_mode in ("grab", "file") and post.get("featured_image"))
+    img_mode = str(post.get("featured_image_mode") or "none").strip().lower()
+    has_img = bool(
+        img_mode == "youtube"
+        or img_mode == "grab"
+        or (img_mode == "file" and post.get("featured_image"))
+    )
 
     # Compact prefix tags at the start of the title for guaranteed visibility
     prefix_tags = []
@@ -596,7 +626,16 @@ def format_post_list_label_and_tooltip(tab_widget: Any, idx: int) -> Tuple[str, 
     tt_lines.append(f"Media: {', '.join(media_types)}")
 
     if has_img:
-        tt_lines.append(f"Featured Image: Attached ({img_mode})")
+        if img_mode == "youtube":
+            tt_lines.append("Featured Image: YouTube default thumbnail")
+        elif img_mode == "grab":
+            fp = post.get("frame_pos")
+            if fp is not None:
+                tt_lines.append(f"Featured Image: Video frame at {format_time(float(fp))}")
+            else:
+                tt_lines.append("Featured Image: Video frame")
+        else:
+            tt_lines.append(f"Featured Image: Attached ({img_mode})")
         img_cap = str(post.get("featured_image_caption") or "").strip()
         img_alt = str(post.get("featured_image_alt_text") or "").strip()
         if img_cap:

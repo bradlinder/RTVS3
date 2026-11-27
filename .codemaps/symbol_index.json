@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-27 12:39:34",
-  "total_files": 206,
+  "generated_at": "2026-11-27 12:51:59",
+  "total_files": 208,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 684,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.20-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.10.21-beta",
       "exports": null,
       "classes": [
         {
@@ -2524,7 +2524,7 @@
     },
     "diagnostics/export_wordpress_core.py": {
       "path": "diagnostics/export_wordpress_core.py",
-      "lines": 606,
+      "lines": 800,
       "summary": "WordPress export scope, content formatting, and YouTube embed diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2532,7 +2532,7 @@
           "name": "DiagnosticExportWordPressCoreMixin",
           "bases": [],
           "start_line": 9,
-          "end_line": 606,
+          "end_line": 800,
           "doc": "",
           "methods": [
             {
@@ -2553,7 +2553,7 @@
               "name": "_test_wordpress_youtube_video_embed",
               "sig": "_test_wordpress_youtube_video_embed(self, item)",
               "start_line": 462,
-              "end_line": 606,
+              "end_line": 800,
               "doc": "Verify YouTube URL parsing, iframe block generation, video project defaults, and Gutenberg placement."
             }
           ]
@@ -2634,7 +2634,7 @@
     },
     "diagnostics/system_runtime_tests.py": {
       "path": "diagnostics/system_runtime_tests.py",
-      "lines": 443,
+      "lines": 445,
       "summary": "System runtime, updater, theme, packaging, roadmap, and modularity diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2642,7 +2642,7 @@
           "name": "DiagnosticSystemRuntimeTestsMixin",
           "bases": [],
           "start_line": 14,
-          "end_line": 443,
+          "end_line": 445,
           "doc": "",
           "methods": [
             {
@@ -2705,7 +2705,7 @@
               "name": "_test_source_file_modularity_and_1000_line_budget_invariant",
               "sig": "_test_source_file_modularity_and_1000_line_budget_invariant(self, item)",
               "start_line": 357,
-              "end_line": 443,
+              "end_line": 445,
               "doc": "Validates that recently decomposed modules adhere to the 1,000-line modular budget,"
             }
           ]
@@ -7961,7 +7961,7 @@
     },
     "plugins/wordpress/export_destination.py": {
       "path": "plugins/wordpress/export_destination.py",
-      "lines": 837,
+      "lines": 871,
       "summary": "WordPress Export Destination for UnifiedExportDialog.",
       "exports": [
         "WordPressExportDestination",
@@ -7991,7 +7991,7 @@
             "ExportDestination"
           ],
           "start_line": 37,
-          "end_line": 716,
+          "end_line": 750,
           "doc": "Export destination handler for WordPress REST API Draft Posts.",
           "methods": [
             {
@@ -8075,7 +8075,7 @@
               "name": "execute_export",
               "sig": "execute_export(self, main_window, export_data, progress_dialog)",
               "start_line": 171,
-              "end_line": 716,
+              "end_line": 750,
               "doc": ""
             }
           ]
@@ -8085,43 +8085,43 @@
           "bases": [
             "QDialog"
           ],
-          "start_line": 719,
-          "end_line": 799,
+          "start_line": 753,
+          "end_line": 833,
           "doc": "Full-featured WordPress post & story metadata editor dialog.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent, main_window, target_story_index)",
-              "start_line": 722,
-              "end_line": 778,
+              "start_line": 756,
+              "end_line": 812,
               "doc": ""
             },
             {
               "name": "_on_save_clicked",
               "sig": "_on_save_clicked(self)",
-              "start_line": 780,
-              "end_line": 785,
+              "start_line": 814,
+              "end_line": 819,
               "doc": ""
             },
             {
               "name": "_on_close_clicked",
               "sig": "_on_close_clicked(self)",
-              "start_line": 787,
-              "end_line": 789,
+              "start_line": 821,
+              "end_line": 823,
               "doc": ""
             },
             {
               "name": "_on_save_and_close",
               "sig": "_on_save_and_close(self)",
-              "start_line": 791,
-              "end_line": 792,
+              "start_line": 825,
+              "end_line": 826,
               "doc": ""
             },
             {
               "name": "done",
               "sig": "done(self, r)",
-              "start_line": 794,
-              "end_line": 799,
+              "start_line": 828,
+              "end_line": 833,
               "doc": ""
             }
           ]
@@ -8484,7 +8484,7 @@
     },
     "plugins/wordpress/wp_post_builder.py": {
       "path": "plugins/wordpress/wp_post_builder.py",
-      "lines": 377,
+      "lines": 453,
       "summary": "Post item builder, transcript slicing, and video frame extraction for WordPress export.",
       "exports": null,
       "classes": [],
@@ -8492,30 +8492,30 @@
         {
           "name": "capture_video_frame",
           "sig": "capture_video_frame(video_path, timestamp, output_path, timeout)",
-          "start_line": 13,
-          "end_line": 35,
+          "start_line": 19,
+          "end_line": 41,
           "doc": "Capture a single frame from video at timestamp using ffmpeg."
         },
         {
           "name": "get_primary_text_slice",
           "sig": "get_primary_text_slice(main_window, primary_lang, st_start, st_end)",
-          "start_line": 38,
-          "end_line": 67,
+          "start_line": 44,
+          "end_line": 73,
           "doc": "Extract transcript or translated text for the specified time slice."
         },
         {
           "name": "build_wp_post_items",
           "sig": "build_wp_post_items(main_window, scope, primary_lang, existing_items)",
-          "start_line": 70,
-          "end_line": 355,
+          "start_line": 76,
+          "end_line": 428,
           "doc": "Build the list of WordPress post definitions according to the export scope."
         },
         {
           "name": "sync_featured_image_meta",
           "sig": "sync_featured_image_meta(wp_meta, post, container_meta)",
-          "start_line": 358,
-          "end_line": 377,
-          "doc": "Persist featured image path, mode, caption, alt text, and frame position into project metadata."
+          "start_line": 431,
+          "end_line": 453,
+          "doc": "Persist featured image path, mode, user-set flag, caption, alt text, and frame position."
         }
       ]
     },
@@ -8634,7 +8634,7 @@
     },
     "plugins/wordpress/wp_tab_widget.py": {
       "path": "plugins/wordpress/wp_tab_widget.py",
-      "lines": 991,
+      "lines": 935,
       "summary": "WordPress export tab configuration widget and preview controller.",
       "exports": null,
       "classes": [
@@ -8643,400 +8643,400 @@
           "bases": [
             "QWidget"
           ],
-          "start_line": 42,
-          "end_line": 990,
+          "start_line": 43,
+          "end_line": 934,
           "doc": "Configuration and preview panel for WordPress Draft Posts.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent, main_window, metadata_editor_mode)",
-              "start_line": 47,
-              "end_line": 66,
+              "start_line": 55,
+              "end_line": 75,
               "doc": ""
             },
             {
               "name": "_setup_ui",
               "sig": "_setup_ui(self)",
-              "start_line": 68,
-              "end_line": 69,
+              "start_line": 77,
+              "end_line": 78,
               "doc": ""
             },
             {
               "name": "_on_wp_include_audio_toggled",
               "sig": "_on_wp_include_audio_toggled(self, checked)",
-              "start_line": 71,
-              "end_line": 108,
+              "start_line": 80,
+              "end_line": 117,
               "doc": ""
             },
             {
               "name": "_update_wp_conn_status",
               "sig": "_update_wp_conn_status(self)",
-              "start_line": 110,
-              "end_line": 118,
+              "start_line": 119,
+              "end_line": 127,
               "doc": ""
             },
             {
               "name": "_open_wp_settings",
               "sig": "_open_wp_settings(self)",
-              "start_line": 120,
-              "end_line": 124,
+              "start_line": 129,
+              "end_line": 133,
               "doc": ""
             },
             {
               "name": "_filter_authors_list",
               "sig": "_filter_authors_list(self, text)",
-              "start_line": 126,
-              "end_line": 130,
+              "start_line": 135,
+              "end_line": 139,
               "doc": ""
             },
             {
               "name": "_filter_categories_list",
               "sig": "_filter_categories_list(self, text)",
-              "start_line": 132,
-              "end_line": 136,
+              "start_line": 141,
+              "end_line": 145,
               "doc": ""
             },
             {
               "name": "_sync_to_proj",
               "sig": "_sync_to_proj(self, idx)",
-              "start_line": 138,
-              "end_line": 140,
+              "start_line": 147,
+              "end_line": 149,
               "doc": ""
             },
             {
               "name": "_on_title_edited",
               "sig": "_on_title_edited(self, text)",
-              "start_line": 142,
-              "end_line": 155,
+              "start_line": 151,
+              "end_line": 164,
               "doc": ""
             },
             {
               "name": "_on_excerpt_edited",
               "sig": "_on_excerpt_edited(self)",
-              "start_line": 157,
-              "end_line": 162,
+              "start_line": 166,
+              "end_line": 171,
               "doc": ""
             },
             {
               "name": "_auto_generate_current_excerpt",
               "sig": "_auto_generate_current_excerpt(self)",
-              "start_line": 164,
-              "end_line": 172,
+              "start_line": 173,
+              "end_line": 181,
               "doc": ""
             },
             {
               "name": "_autofill_all_excerpts",
               "sig": "_autofill_all_excerpts(self)",
-              "start_line": 174,
-              "end_line": 185,
+              "start_line": 183,
+              "end_line": 194,
               "doc": ""
             },
             {
               "name": "_on_author_item_changed",
               "sig": "_on_author_item_changed(self, item)",
-              "start_line": 187,
-              "end_line": 195,
+              "start_line": 196,
+              "end_line": 204,
               "doc": ""
             },
             {
               "name": "_sync_categories_to_all_stories",
               "sig": "_sync_categories_to_all_stories(self, cat_ids)",
-              "start_line": 197,
-              "end_line": 204,
+              "start_line": 206,
+              "end_line": 213,
               "doc": "Copy category_ids to every Story item in wp_post_items without altering Full Episode."
             },
             {
               "name": "_on_cats_apply_all_stories_toggled",
               "sig": "_on_cats_apply_all_stories_toggled(self, checked)",
-              "start_line": 206,
-              "end_line": 213,
+              "start_line": 215,
+              "end_line": 222,
               "doc": ""
             },
             {
               "name": "_on_category_item_changed",
               "sig": "_on_category_item_changed(self, item)",
-              "start_line": 215,
-              "end_line": 224,
+              "start_line": 224,
+              "end_line": 233,
               "doc": ""
             },
             {
               "name": "_clear_current_authors",
               "sig": "_clear_current_authors(self)",
-              "start_line": 226,
-              "end_line": 232,
+              "start_line": 235,
+              "end_line": 241,
               "doc": ""
             },
             {
               "name": "_clear_current_categories",
               "sig": "_clear_current_categories(self)",
-              "start_line": 234,
-              "end_line": 242,
+              "start_line": 243,
+              "end_line": 251,
               "doc": ""
             },
             {
               "name": "_get_selected_story_indices",
               "sig": "_get_selected_story_indices(self)",
-              "start_line": 244,
-              "end_line": 248,
+              "start_line": 253,
+              "end_line": 257,
               "doc": ""
             },
             {
               "name": "_apply_authors_to_selected_stories",
               "sig": "_apply_authors_to_selected_stories(self)",
-              "start_line": 250,
-              "end_line": 251,
+              "start_line": 259,
+              "end_line": 260,
               "doc": ""
             },
             {
               "name": "_apply_categories_to_selected_stories",
               "sig": "_apply_categories_to_selected_stories(self)",
-              "start_line": 253,
-              "end_line": 254,
+              "start_line": 262,
+              "end_line": 263,
               "doc": ""
             },
             {
               "name": "_apply_thumbnails_to_selected_stories",
               "sig": "_apply_thumbnails_to_selected_stories(self)",
-              "start_line": 256,
-              "end_line": 257,
+              "start_line": 265,
+              "end_line": 266,
               "doc": ""
             },
             {
               "name": "_bulk_apply_to_selected",
               "sig": "_bulk_apply_to_selected(self, *keys)",
-              "start_line": 259,
-              "end_line": 291,
+              "start_line": 268,
+              "end_line": 300,
               "doc": ""
             },
             {
               "name": "_apply_authors_to_all_posts",
               "sig": "_apply_authors_to_all_posts(self)",
-              "start_line": 293,
-              "end_line": 294,
+              "start_line": 302,
+              "end_line": 303,
               "doc": ""
             },
             {
               "name": "_apply_categories_to_all_posts",
               "sig": "_apply_categories_to_all_posts(self)",
-              "start_line": 296,
-              "end_line": 297,
+              "start_line": 305,
+              "end_line": 306,
               "doc": ""
             },
             {
               "name": "_apply_thumbnails_to_all_posts",
               "sig": "_apply_thumbnails_to_all_posts(self)",
-              "start_line": 299,
-              "end_line": 300,
+              "start_line": 308,
+              "end_line": 309,
               "doc": ""
             },
             {
               "name": "_bulk_apply_to_all",
               "sig": "_bulk_apply_to_all(self, *keys)",
-              "start_line": 302,
-              "end_line": 321,
+              "start_line": 311,
+              "end_line": 330,
               "doc": ""
             },
             {
               "name": "_apply_podcast_to_selected_stories",
               "sig": "_apply_podcast_to_selected_stories(self)",
-              "start_line": 323,
-              "end_line": 353,
+              "start_line": 332,
+              "end_line": 362,
               "doc": ""
             },
             {
               "name": "_apply_podcast_to_all_posts",
               "sig": "_apply_podcast_to_all_posts(self)",
-              "start_line": 355,
-              "end_line": 370,
+              "start_line": 364,
+              "end_line": 379,
               "doc": ""
             },
             {
               "name": "_sync_post_to_project",
               "sig": "_sync_post_to_project(self, idx, log_reason)",
-              "start_line": 372,
-              "end_line": 474,
+              "start_line": 381,
+              "end_line": 483,
               "doc": ""
             },
             {
               "name": "save_all_posts_to_project",
               "sig": "save_all_posts_to_project(self)",
-              "start_line": 476,
-              "end_line": 501,
+              "start_line": 485,
+              "end_line": 510,
               "doc": "Persist all post metadata and export options back into stories and project_metadata."
             },
             {
               "name": "_update_post_list_item_label",
               "sig": "_update_post_list_item_label(self, idx)",
-              "start_line": 503,
-              "end_line": 511,
+              "start_line": 512,
+              "end_line": 520,
               "doc": ""
             },
             {
               "name": "_on_wp_post_selection_changed",
               "sig": "_on_wp_post_selection_changed(self, row)",
-              "start_line": 513,
-              "end_line": 516,
+              "start_line": 522,
+              "end_line": 525,
               "doc": ""
             },
             {
               "name": "_get_editor_checked_authors",
               "sig": "_get_editor_checked_authors(self)",
-              "start_line": 518,
-              "end_line": 526,
+              "start_line": 527,
+              "end_line": 535,
               "doc": ""
             },
             {
               "name": "_set_editor_checked_authors",
               "sig": "_set_editor_checked_authors(self, author_ids, author_term_ids)",
-              "start_line": 528,
-              "end_line": 535,
+              "start_line": 537,
+              "end_line": 544,
               "doc": ""
             },
             {
               "name": "_get_editor_checked_categories",
               "sig": "_get_editor_checked_categories(self)",
-              "start_line": 537,
-              "end_line": 545,
+              "start_line": 546,
+              "end_line": 554,
               "doc": ""
             },
             {
               "name": "_set_editor_checked_categories",
               "sig": "_set_editor_checked_categories(self, cat_ids)",
-              "start_line": 547,
-              "end_line": 555,
+              "start_line": 556,
+              "end_line": 564,
               "doc": ""
             },
             {
               "name": "_get_wp_post_bounds",
               "sig": "_get_wp_post_bounds(self, post_index)",
-              "start_line": 557,
-              "end_line": 566,
+              "start_line": 566,
+              "end_line": 575,
               "doc": ""
             },
             {
               "name": "_sync_wp_slider_to_pos",
               "sig": "_sync_wp_slider_to_pos(self, pos)",
-              "start_line": 568,
-              "end_line": 578,
+              "start_line": 577,
+              "end_line": 587,
               "doc": ""
             },
             {
               "name": "_on_wp_slider_value_changed",
               "sig": "_on_wp_slider_value_changed(self, val)",
-              "start_line": 580,
-              "end_line": 588,
+              "start_line": 589,
+              "end_line": 598,
               "doc": ""
             },
             {
               "name": "_on_wp_scrub_timer_timeout",
               "sig": "_on_wp_scrub_timer_timeout(self)",
-              "start_line": 590,
-              "end_line": 594,
+              "start_line": 600,
+              "end_line": 604,
               "doc": ""
             },
             {
               "name": "_on_wp_step",
               "sig": "_on_wp_step(self, delta_secs)",
-              "start_line": 596,
-              "end_line": 604,
+              "start_line": 606,
+              "end_line": 614,
               "doc": ""
             },
             {
               "name": "_on_wp_sync_playhead",
               "sig": "_on_wp_sync_playhead(self)",
-              "start_line": 606,
-              "end_line": 613,
+              "start_line": 616,
+              "end_line": 623,
               "doc": ""
             },
             {
               "name": "_load_post_editor_state",
               "sig": "_load_post_editor_state(self, index)",
-              "start_line": 615,
-              "end_line": 690,
+              "start_line": 625,
+              "end_line": 657,
               "doc": ""
             },
             {
               "name": "_on_wp_thumb_mode_changed",
               "sig": "_on_wp_thumb_mode_changed(self)",
-              "start_line": 692,
-              "end_line": 730,
+              "start_line": 659,
+              "end_line": 660,
               "doc": ""
             },
             {
               "name": "_on_wp_thumb_meta_changed",
               "sig": "_on_wp_thumb_meta_changed(self)",
-              "start_line": 732,
-              "end_line": 739,
+              "start_line": 662,
+              "end_line": 669,
               "doc": ""
             },
             {
               "name": "_capture_wp_frame",
-              "sig": "_capture_wp_frame(self, pos)",
-              "start_line": 741,
-              "end_line": 775,
+              "sig": "_capture_wp_frame(self, pos, user_initiated)",
+              "start_line": 671,
+              "end_line": 708,
               "doc": ""
             },
             {
               "name": "_on_wp_browse_thumb",
               "sig": "_on_wp_browse_thumb(self)",
-              "start_line": 777,
-              "end_line": 796,
+              "start_line": 710,
+              "end_line": 731,
               "doc": ""
             },
             {
               "name": "_cleanup_temp_files",
               "sig": "_cleanup_temp_files(self)",
-              "start_line": 798,
-              "end_line": 807,
+              "start_line": 733,
+              "end_line": 742,
               "doc": "Purge temporary frame grabs and preview images."
             },
             {
               "name": "closeEvent",
               "sig": "closeEvent(self, event)",
-              "start_line": 809,
-              "end_line": 817,
-              "doc": "Persist current post state and clean up temp files on widget/dialog closure."
+              "start_line": 744,
+              "end_line": 761,
+              "doc": "Persist current post state, stop background thumbnail workers, and clean up temp files."
             },
             {
               "name": "select_story_index",
               "sig": "select_story_index(self, story_idx)",
-              "start_line": 819,
-              "end_line": 826,
+              "start_line": 763,
+              "end_line": 770,
               "doc": ""
             },
             {
               "name": "rebuild_post_items",
               "sig": "rebuild_post_items(self, scope)",
-              "start_line": 828,
-              "end_line": 869,
+              "start_line": 772,
+              "end_line": 813,
               "doc": ""
             },
             {
               "name": "_populate_wp_export_metadata",
               "sig": "_populate_wp_export_metadata(self, force_refresh)",
-              "start_line": 871,
-              "end_line": 938,
+              "start_line": 815,
+              "end_line": 882,
               "doc": ""
             },
             {
               "name": "_prompt_wp_credentials",
               "sig": "_prompt_wp_credentials(self, title, message)",
-              "start_line": 940,
-              "end_line": 953,
+              "start_line": 884,
+              "end_line": 897,
               "doc": ""
             },
             {
               "name": "_refresh_castos_feeds",
               "sig": "_refresh_castos_feeds(self)",
-              "start_line": 955,
-              "end_line": 972,
+              "start_line": 899,
+              "end_line": 916,
               "doc": ""
             },
             {
               "name": "_refresh_wp_metadata",
               "sig": "_refresh_wp_metadata(self)",
-              "start_line": 974,
-              "end_line": 990,
+              "start_line": 918,
+              "end_line": 934,
               "doc": ""
             }
           ]
@@ -9044,9 +9044,161 @@
       ],
       "functions": []
     },
+    "plugins/wordpress/wp_thumb_ui.py": {
+      "path": "plugins/wordpress/wp_thumb_ui.py",
+      "lines": 245,
+      "summary": "UI presentation controller for WordPress Featured Image controls and preview.",
+      "exports": [
+        "load_featured_image_from_post",
+        "on_featured_image_mode_changed",
+        "on_youtube_thumbnail_fetched"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "_set_preview_pixmap",
+          "sig": "_set_preview_pixmap(tab_widget, image_path)",
+          "start_line": 20,
+          "end_line": 27,
+          "doc": ""
+        },
+        {
+          "name": "_start_youtube_thumbnail_fetch",
+          "sig": "_start_youtube_thumbnail_fetch(tab_widget, video_id, thumbnail_url)",
+          "start_line": 30,
+          "end_line": 52,
+          "doc": "Kick off a non-blocking background QThread fetch for a YouTube default thumbnail."
+        },
+        {
+          "name": "on_youtube_thumbnail_fetched",
+          "sig": "on_youtube_thumbnail_fetched(tab_widget, video_id, local_path)",
+          "start_line": 55,
+          "end_line": 84,
+          "doc": "Apply downloaded YouTube thumbnail preview on the Qt main thread if still relevant."
+        },
+        {
+          "name": "load_featured_image_from_post",
+          "sig": "load_featured_image_from_post(tab_widget, index, post)",
+          "start_line": 87,
+          "end_line": 166,
+          "doc": "Populate Featured Image radio buttons, scrubber, and preview from a post dict."
+        },
+        {
+          "name": "on_featured_image_mode_changed",
+          "sig": "on_featured_image_mode_changed(tab_widget)",
+          "start_line": 169,
+          "end_line": 238,
+          "doc": "Handle user selection of Featured Image radio buttons."
+        }
+      ]
+    },
+    "plugins/wordpress/wp_thumbnail_defaults.py": {
+      "path": "plugins/wordpress/wp_thumbnail_defaults.py",
+      "lines": 445,
+      "summary": "Headless YouTube-source featured image defaults, thumbnail caching, and embed inheritance.",
+      "exports": [
+        "extract_youtube_id_headless",
+        "get_youtube_thumbnail_cache_path",
+        "get_youtube_source_info",
+        "resolve_post_youtube_video_id",
+        "resolve_inherited_youtube_embed",
+        "compute_default_segment_frame_pos",
+        "should_apply_youtube_featured_default",
+        "build_youtube_thumbnail_candidates",
+        "ensure_youtube_thumbnail_cached",
+        "materialize_post_featured_image"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "extract_youtube_id_headless",
+          "sig": "extract_youtube_id_headless(url_or_id)",
+          "start_line": 35,
+          "end_line": 68,
+          "doc": "Extract a validated 11-character YouTube video ID without Qt dependencies."
+        },
+        {
+          "name": "get_youtube_thumbnail_cache_path",
+          "sig": "get_youtube_thumbnail_cache_path(video_id, cache_dir)",
+          "start_line": 71,
+          "end_line": 81,
+          "doc": "Return the deterministic local cache path for a YouTube video's default thumbnail."
+        },
+        {
+          "name": "get_youtube_source_info",
+          "sig": "get_youtube_source_info(main_window, cache_dir)",
+          "start_line": 84,
+          "end_line": 131,
+          "doc": "Inspect project metadata to determine whether the active source media is from YouTube."
+        },
+        {
+          "name": "resolve_post_youtube_video_id",
+          "sig": "resolve_post_youtube_video_id(post, main_window)",
+          "start_line": 134,
+          "end_line": 141,
+          "doc": "Resolve the active 11-character YouTube video ID for a post or YouTube-source project."
+        },
+        {
+          "name": "resolve_inherited_youtube_embed",
+          "sig": "resolve_inherited_youtube_embed(main_window, story_wp_meta)",
+          "start_line": 144,
+          "end_line": 199,
+          "doc": "Resolve episode-level YouTube embed settings that individual stories should inherit."
+        },
+        {
+          "name": "compute_default_segment_frame_pos",
+          "sig": "compute_default_segment_frame_pos(start, end, fallback)",
+          "start_line": 202,
+          "end_line": 219,
+          "doc": "Compute a representative video timestamp strictly inside ``[start, end]``."
+        },
+        {
+          "name": "should_apply_youtube_featured_default",
+          "sig": "should_apply_youtube_featured_default(wp_meta, container_meta)",
+          "start_line": 222,
+          "end_line": 244,
+          "doc": "Return True when no explicit featured image preference has been chosen yet."
+        },
+        {
+          "name": "build_youtube_thumbnail_candidates",
+          "sig": "build_youtube_thumbnail_candidates(video_id, thumbnail_url)",
+          "start_line": 247,
+          "end_line": 269,
+          "doc": "Return ordered HTTPS YouTube thumbnail candidate URLs preferring high-res JPEG."
+        },
+        {
+          "name": "_normalize_thumbnail_bytes_to_jpeg",
+          "sig": "_normalize_thumbnail_bytes_to_jpeg(raw)",
+          "start_line": 272,
+          "end_line": 300,
+          "doc": "Validate downloaded thumbnail bytes and normalize PNG/WEBP payloads to JPEG."
+        },
+        {
+          "name": "_default_http_fetch",
+          "sig": "_default_http_fetch(url, timeout)",
+          "start_line": 303,
+          "end_line": 312,
+          "doc": ""
+        },
+        {
+          "name": "ensure_youtube_thumbnail_cached",
+          "sig": "ensure_youtube_thumbnail_cached(video_id, thumbnail_url, timeout, cache_dir, fetcher)",
+          "start_line": 315,
+          "end_line": 346,
+          "doc": "Download (if needed) and atomically cache a YouTube video's default thumbnail."
+        },
+        {
+          "name": "materialize_post_featured_image",
+          "sig": "materialize_post_featured_image(post, main_window, post_index, temp_files_out, allow_network, cache_dir, fetcher, frame_capturer)",
+          "start_line": 349,
+          "end_line": 431,
+          "doc": "Ensure a post's configured featured image exists on disk and return its path."
+        }
+      ]
+    },
     "plugins/wordpress/wp_ui_builder.py": {
       "path": "plugins/wordpress/wp_ui_builder.py",
-      "lines": 812,
+      "lines": 817,
       "summary": "UI layout construction and widget setup for WordPressExportTabWidget.",
       "exports": null,
       "classes": [],
@@ -9055,17 +9207,18 @@
           "name": "setup_wp_tab_ui",
           "sig": "setup_wp_tab_ui(self)",
           "start_line": 36,
-          "end_line": 812,
+          "end_line": 817,
           "doc": "Construct all controls, forms, sliders, list widgets, and tabbed panels for the WordPress export tab."
         }
       ]
     },
     "plugins/wordpress/wp_workers.py": {
       "path": "plugins/wordpress/wp_workers.py",
-      "lines": 78,
+      "lines": 106,
       "summary": "Background QThread worker for publishing individual WordPress stories.",
       "exports": [
-        "WordPressPublishWorker"
+        "WordPressPublishWorker",
+        "YouTubeThumbnailFetchWorker"
       ],
       "classes": [
         {
@@ -9092,13 +9245,38 @@
               "doc": ""
             }
           ]
+        },
+        {
+          "name": "YouTubeThumbnailFetchWorker",
+          "bases": [
+            "QThread"
+          ],
+          "start_line": 78,
+          "end_line": 103,
+          "doc": "Background thread that downloads and caches a YouTube video's default thumbnail.",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, video_id, thumbnail_url, timeout)",
+              "start_line": 83,
+              "end_line": 87,
+              "doc": ""
+            },
+            {
+              "name": "run",
+              "sig": "run(self)",
+              "start_line": 89,
+              "end_line": 103,
+              "doc": ""
+            }
+          ]
         }
       ],
       "functions": []
     },
     "plugins/wordpress/youtube_embed.py": {
       "path": "plugins/wordpress/youtube_embed.py",
-      "lines": 615,
+      "lines": 654,
       "summary": "YouTube Video Embed helpers, Gutenberg iframe generator, and UI setup for WordPress export.",
       "exports": null,
       "classes": [],
@@ -9149,56 +9327,56 @@
           "name": "load_youtube_from_post",
           "sig": "load_youtube_from_post(tab_widget, post)",
           "start_line": 385,
-          "end_line": 433,
+          "end_line": 442,
           "doc": "Populate YouTube controls from the given post dictionary."
         },
         {
           "name": "sync_youtube_to_meta",
           "sig": "sync_youtube_to_meta(target_meta, post)",
-          "start_line": 436,
-          "end_line": 444,
+          "start_line": 445,
+          "end_line": 454,
           "doc": "Sync YouTube embed settings from post to target_meta dictionary."
         },
         {
           "name": "_on_youtube_url_changed",
           "sig": "_on_youtube_url_changed(tab_widget, text)",
-          "start_line": 447,
-          "end_line": 489,
+          "start_line": 457,
+          "end_line": 510,
           "doc": ""
         },
         {
           "name": "_on_youtube_apply_all_toggled",
           "sig": "_on_youtube_apply_all_toggled(tab_widget, checked)",
-          "start_line": 492,
-          "end_line": 496,
+          "start_line": 513,
+          "end_line": 522,
           "doc": ""
         },
         {
           "name": "_on_youtube_use_story_time_toggled",
           "sig": "_on_youtube_use_story_time_toggled(tab_widget, checked)",
-          "start_line": 499,
-          "end_line": 509,
-          "doc": ""
-        },
-        {
-          "name": "_on_youtube_stop_at_end_toggled",
-          "sig": "_on_youtube_stop_at_end_toggled(tab_widget, checked)",
-          "start_line": 512,
-          "end_line": 522,
-          "doc": ""
-        },
-        {
-          "name": "_on_youtube_placement_toggled",
-          "sig": "_on_youtube_placement_toggled(tab_widget, placement)",
           "start_line": 525,
           "end_line": 535,
           "doc": ""
         },
         {
+          "name": "_on_youtube_stop_at_end_toggled",
+          "sig": "_on_youtube_stop_at_end_toggled(tab_widget, checked)",
+          "start_line": 538,
+          "end_line": 548,
+          "doc": ""
+        },
+        {
+          "name": "_on_youtube_placement_toggled",
+          "sig": "_on_youtube_placement_toggled(tab_widget, placement)",
+          "start_line": 551,
+          "end_line": 561,
+          "doc": ""
+        },
+        {
           "name": "format_post_list_label_and_tooltip",
           "sig": "format_post_list_label_and_tooltip(tab_widget, idx)",
-          "start_line": 538,
-          "end_line": 615,
+          "start_line": 564,
+          "end_line": 654,
           "doc": "Return formatted label text and rich multi-line tooltip for an item in wp_posts_list."
         }
       ]
@@ -9822,7 +10000,7 @@
     },
     "plugins/youtube/yt_import_dialog.py": {
       "path": "plugins/youtube/yt_import_dialog.py",
-      "lines": 752,
+      "lines": 754,
       "summary": "Qt Dialogs for importing existing YouTube videos, re-downloading archived sources, and updating yt-dlp.",
       "exports": [
         "populate_project_from_youtube_import",
@@ -9837,127 +10015,127 @@
           "bases": [
             "QDialog"
           ],
-          "start_line": 184,
-          "end_line": 630,
+          "start_line": 186,
+          "end_line": 632,
           "doc": "Dialog for fetching, configuring, downloading, and opening an existing YouTube video.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, main_window, parent, initial_url, initial_quality, redownload_mode)",
-              "start_line": 187,
-              "end_line": 216,
+              "start_line": 189,
+              "end_line": 218,
               "doc": ""
             },
             {
               "name": "_build_ui",
               "sig": "_build_ui(self, initial_url, initial_quality)",
-              "start_line": 218,
-              "end_line": 373,
+              "start_line": 220,
+              "end_line": 375,
               "doc": ""
             },
             {
               "name": "_refresh_yt_dlp_status",
               "sig": "_refresh_yt_dlp_status(self)",
-              "start_line": 375,
-              "end_line": 382,
+              "start_line": 377,
+              "end_line": 384,
               "doc": ""
             },
             {
               "name": "_set_busy",
               "sig": "_set_busy(self, busy)",
-              "start_line": 384,
-              "end_line": 393,
+              "start_line": 386,
+              "end_line": 395,
               "doc": ""
             },
             {
               "name": "_refresh_quality_estimate_and_cache",
               "sig": "_refresh_quality_estimate_and_cache(self)",
-              "start_line": 395,
-              "end_line": 417,
+              "start_line": 397,
+              "end_line": 419,
               "doc": ""
             },
             {
               "name": "_render_meta_summary",
               "sig": "_render_meta_summary(self)",
-              "start_line": 419,
-              "end_line": 433,
+              "start_line": 421,
+              "end_line": 435,
               "doc": ""
             },
             {
               "name": "_start_probe",
               "sig": "_start_probe(self)",
-              "start_line": 435,
-              "end_line": 457,
+              "start_line": 437,
+              "end_line": 459,
               "doc": ""
             },
             {
               "name": "_on_probe_finished",
               "sig": "_on_probe_finished(self, meta)",
-              "start_line": 459,
-              "end_line": 474,
+              "start_line": 461,
+              "end_line": 476,
               "doc": ""
             },
             {
               "name": "_start_download",
               "sig": "_start_download(self)",
-              "start_line": 476,
-              "end_line": 539,
+              "start_line": 478,
+              "end_line": 541,
               "doc": ""
             },
             {
               "name": "_on_download_finished",
               "sig": "_on_download_finished(self, result)",
-              "start_line": 541,
-              "end_line": 547,
+              "start_line": 543,
+              "end_line": 549,
               "doc": ""
             },
             {
               "name": "_on_worker_progress",
               "sig": "_on_worker_progress(self, pct, msg)",
-              "start_line": 549,
-              "end_line": 551,
+              "start_line": 551,
+              "end_line": 553,
               "doc": ""
             },
             {
               "name": "_on_worker_failed",
               "sig": "_on_worker_failed(self, msg, err_meta)",
-              "start_line": 553,
-              "end_line": 568,
+              "start_line": 555,
+              "end_line": 570,
               "doc": ""
             },
             {
               "name": "_start_yt_dlp_update",
               "sig": "_start_yt_dlp_update(self, retry_after)",
-              "start_line": 570,
-              "end_line": 600,
+              "start_line": 572,
+              "end_line": 602,
               "doc": ""
             },
             {
               "name": "_on_retry_with_cookies",
               "sig": "_on_retry_with_cookies(self)",
-              "start_line": 602,
-              "end_line": 613,
+              "start_line": 604,
+              "end_line": 615,
               "doc": ""
             },
             {
               "name": "_cancel_active_workers",
               "sig": "_cancel_active_workers(self)",
-              "start_line": 615,
-              "end_line": 618,
+              "start_line": 617,
+              "end_line": 620,
               "doc": ""
             },
             {
               "name": "_on_cancel_clicked",
               "sig": "_on_cancel_clicked(self)",
-              "start_line": 620,
-              "end_line": 626,
+              "start_line": 622,
+              "end_line": 628,
               "doc": ""
             },
             {
               "name": "closeEvent",
               "sig": "closeEvent(self, event)",
-              "start_line": 628,
-              "end_line": 630,
+              "start_line": 630,
+              "end_line": 632,
               "doc": ""
             }
           ]
@@ -9975,28 +10153,28 @@
           "name": "populate_project_from_youtube_import",
           "sig": "populate_project_from_youtube_import(main_window, video_meta, file_path, quality_preset, cache_key, import_chapters, existing_wp_url)",
           "start_line": 72,
-          "end_line": 181,
+          "end_line": 183,
           "doc": "Populate project metadata, WordPress YouTube embed state, and optional chapters."
         },
         {
           "name": "open_yt_dlp_updater_dialog",
           "sig": "open_yt_dlp_updater_dialog(parent)",
-          "start_line": 633,
-          "end_line": 679,
+          "start_line": 635,
+          "end_line": 681,
           "doc": "Quick standalone updater dialog triggered from Cache Manager or Preferences."
         },
         {
           "name": "prompt_load_youtube_episode_dialog",
           "sig": "prompt_load_youtube_episode_dialog(main_window, parent)",
-          "start_line": 682,
-          "end_line": 720,
+          "start_line": 684,
+          "end_line": 722,
           "doc": "Launch the YouTube import dialog, respect unsaved-project guard, and load downloaded media."
         },
         {
           "name": "redownload_youtube_source_dialog",
           "sig": "redownload_youtube_source_dialog(main_window, source_meta, parent)",
-          "start_line": 723,
-          "end_line": 743,
+          "start_line": 725,
+          "end_line": 745,
           "doc": "Re-download an archived YouTube source for an existing .rtvs project."
         }
       ]
@@ -19639,7 +19817,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 856,
-      "summary": "Radio & TV Segmenter v3.10.20-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.21-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",
