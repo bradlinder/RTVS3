@@ -257,6 +257,10 @@ class DiagnosticYouTubeImportCacheTestsMixin:
         from plugins.wordpress.plugin import Plugin as WordPressPlugin
         from shortcuts.schema import SHORTCUT_DEFINITIONS
         import embedded_guides
+        import media_batch
+
+        assert hasattr(media_batch.MediaBatchMixin, "open_manage_cached_media_dialog")
+        assert hasattr(media_batch.MediaBatchMixin, "redownload_current_project_remote_media")
 
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)

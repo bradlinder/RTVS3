@@ -1,7 +1,6 @@
 # media_batch.pyi — Typing and Interface Stub for media_batch
 from __future__ import annotations
-
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+from typing import Optional
 from PySide6.QtCore import Qt, QThread, QTimer
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QGroupBox, QLabel, QMessageBox, QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QTableWidget, QHeaderView, QAbstractItemView
