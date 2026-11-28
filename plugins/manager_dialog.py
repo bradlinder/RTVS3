@@ -545,7 +545,8 @@ class PluginManagerDialog(QDialog):
                     except Exception:
                         pass
             try:
-                if worker.isRunning():
+                is_running_fn = getattr(worker, "isRunning", None)
+                if callable(is_running_fn) and is_running_fn():
                     worker.requestInterruption()
                     worker.setParent(None)
                     _DETACHED_MANAGER_WORKERS.add(worker)

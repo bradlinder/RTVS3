@@ -24,7 +24,7 @@ except ImportError:
         from prs_shared import INTERNAL_APP_ID, make_dialog_maximizable, PROJECT_VERSION
     except Exception:
         INTERNAL_APP_ID = "RadioTVStorySegmenter"
-        PROJECT_VERSION = "3.10.34-beta"
+        PROJECT_VERSION = "3.10.35-beta"
         def make_dialog_maximizable(dlg): pass
 
 logger = logging.getLogger(__name__)
@@ -102,23 +102,24 @@ def serialize_glossary(settings_store=None) -> List[Dict[str, Any]]:
         return []
 
 
-def serialize_models_inventory() -> List[Dict[str, Any]]:
+def serialize_models_inventory(models_dir_override: str | Path | None = None) -> List[Dict[str, Any]]:
     """Extracts installed local model metadata."""
     models: List[Dict[str, Any]] = []
     try:
-        md = None
-        try:
-            from core_utils import get_models_storage_dir
-            md = str(get_models_storage_dir())
-        except (ImportError, AttributeError):
-            pass
-
-        if not md:
+        md = str(models_dir_override) if models_dir_override is not None else None
+        if md is None:
             try:
-                from prs_shared import models_dir
-                md = str(models_dir())
-            except Exception:
+                from core_utils import get_models_storage_dir
+                md = str(get_models_storage_dir())
+            except (ImportError, AttributeError):
                 pass
+
+            if not md:
+                try:
+                    from prs_shared import models_dir
+                    md = str(models_dir())
+                except Exception:
+                    pass
 
         if md and os.path.exists(md):
             for entry in sorted(os.listdir(md)):

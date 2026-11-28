@@ -592,7 +592,8 @@ class GitHubPluginsDialog(QDialog):
                     except Exception:
                         pass
             try:
-                if worker.isRunning():
+                is_running_fn = getattr(worker, "isRunning", None)
+                if callable(is_running_fn) and is_running_fn():
                     worker.requestInterruption()
                     worker.setParent(None)
                     _DETACHED_PLUGIN_WORKERS.add(worker)

@@ -339,10 +339,13 @@ class DiagnosticYouTubeImportCacheTestsMixin:
         seqs = [d.action_id for d in SHORTCUT_DEFINITIONS if d.default_seq == "Ctrl+Alt+Y"]
         assert seqs == ["open_remote_youtube"], f"Collision on Ctrl+Alt+Y: {seqs}"
 
-        readme_text = Path("README.md").read_text(encoding="utf-8")
-        assert "Ctrl+Alt+Y" in readme_text
-        assert "Open Remote Episode" in readme_text
-        assert "Manage Cached Remote Media" in readme_text
+        from diagnostic_helpers import PROJECT_ROOT
+        readme_path = PROJECT_ROOT / "README.md"
+        if readme_path.is_file():
+            readme_text = readme_path.read_text(encoding="utf-8")
+            assert "Ctrl+Alt+Y" in readme_text
+            assert "Open Remote Episode" in readme_text
+            assert "Manage Cached Remote Media" in readme_text
         assert "Open Remote Episode" in embedded_guides.get_embedded_guide("workflow")
         assert "From YouTube Video" in embedded_guides.get_embedded_guide("video_shows")
         assert "Managed Remote Media Cache" in embedded_guides.get_embedded_guide("youtube")

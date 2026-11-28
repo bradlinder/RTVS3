@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-27 21:53:17",
+  "generated_at": "2026-11-28 14:24:50",
   "total_files": 210,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 686,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.34-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.10.35-beta",
       "exports": null,
       "classes": [
         {
@@ -345,7 +345,7 @@
     },
     "backup_manager.py": {
       "path": "backup_manager.py",
-      "lines": 622,
+      "lines": 623,
       "summary": "Unified State Serialization & Local Backup & Restore Engine.",
       "exports": null,
       "classes": [],
@@ -380,51 +380,51 @@
         },
         {
           "name": "serialize_models_inventory",
-          "sig": "serialize_models_inventory()",
+          "sig": "serialize_models_inventory(models_dir_override)",
           "start_line": 105,
-          "end_line": 143,
+          "end_line": 144,
           "doc": "Extracts installed local model metadata."
         },
         {
           "name": "serialize_plugin_states",
           "sig": "serialize_plugin_states(settings_store)",
-          "start_line": 146,
-          "end_line": 163,
+          "start_line": 147,
+          "end_line": 164,
           "doc": "Extracts enabled states for installed plugins."
         },
         {
           "name": "create_backup_payload",
           "sig": "create_backup_payload(settings_store, shortcuts_mgr, main_window)",
-          "start_line": 166,
-          "end_line": 190,
+          "start_line": 167,
+          "end_line": 191,
           "doc": "Creates a unified, cryptographically verified state backup payload dictionary."
         },
         {
           "name": "verify_backup_payload",
           "sig": "verify_backup_payload(payload_raw)",
-          "start_line": 193,
-          "end_line": 231,
+          "start_line": 194,
+          "end_line": 232,
           "doc": "Validates structure, format identifier, and SHA-256 cryptographic checksum."
         },
         {
           "name": "apply_backup_payload",
           "sig": "apply_backup_payload(payload, main_window, settings_store, shortcuts_mgr)",
-          "start_line": 234,
-          "end_line": 360,
+          "start_line": 235,
+          "end_line": 361,
           "doc": "Applies a verified backup payload to system settings, shortcuts, and glossary."
         },
         {
           "name": "export_local_backup",
           "sig": "export_local_backup(target_path, settings_store, shortcuts_mgr, main_window)",
-          "start_line": 363,
-          "end_line": 378,
+          "start_line": 364,
+          "end_line": 379,
           "doc": "Writes a verified state backup archive to a local file."
         },
         {
           "name": "restore_local_backup",
           "sig": "restore_local_backup(source_path, main_window, settings_store, shortcuts_mgr)",
-          "start_line": 381,
-          "end_line": 406,
+          "start_line": 382,
+          "end_line": 407,
           "doc": "Restores settings and configurations from a local backup file."
         }
       ]
@@ -1126,7 +1126,7 @@
     },
     "cache_manager.py": {
       "path": "cache_manager.py",
-      "lines": 686,
+      "lines": 716,
       "summary": "Radio & TV Segmenter \u2014 Cache management, disk usage scanning, and purging utilities.",
       "exports": null,
       "classes": [
@@ -1135,50 +1135,50 @@
           "bases": [
             "QDialog"
           ],
-          "start_line": 519,
-          "end_line": 686,
+          "start_line": 549,
+          "end_line": 716,
           "doc": "Dialog for inspecting disk cache sizes and clearing temporary data.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent, language, project_dirs, auto_refresh)",
-              "start_line": 522,
-              "end_line": 533,
+              "start_line": 552,
+              "end_line": 563,
               "doc": ""
             },
             {
               "name": "_init_ui",
               "sig": "_init_ui(self)",
-              "start_line": 535,
-              "end_line": 625,
+              "start_line": 565,
+              "end_line": 655,
               "doc": ""
             },
             {
               "name": "refresh_stats",
               "sig": "refresh_stats(self)",
-              "start_line": 627,
-              "end_line": 651,
+              "start_line": 657,
+              "end_line": 681,
               "doc": ""
             },
             {
               "name": "_on_clear_all",
               "sig": "_on_clear_all(self)",
-              "start_line": 653,
-              "end_line": 657,
+              "start_line": 683,
+              "end_line": 687,
               "doc": ""
             },
             {
               "name": "_on_clear_selected",
               "sig": "_on_clear_selected(self)",
-              "start_line": 659,
-              "end_line": 670,
+              "start_line": 689,
+              "end_line": 700,
               "doc": ""
             },
             {
               "name": "_do_purge",
               "sig": "_do_purge(self, clear_thumbs, clear_waves, clear_audio)",
-              "start_line": 672,
-              "end_line": 686,
+              "start_line": 702,
+              "end_line": 716,
               "doc": ""
             }
           ]
@@ -1208,23 +1208,23 @@
         },
         {
           "name": "cleanup_old_thumbnail_cache",
-          "sig": "cleanup_old_thumbnail_cache(max_age_hours, active_dir, exclude_dirs, blocking)",
+          "sig": "cleanup_old_thumbnail_cache(max_age_hours, active_dir, exclude_dirs, blocking, base_dir)",
           "start_line": 76,
-          "end_line": 203,
+          "end_line": 204,
           "doc": "Purge temporary thumbnail directories older than max_age_hours in a background thread."
         },
         {
           "name": "get_cache_disk_usage",
-          "sig": "get_cache_disk_usage(project_dirs)",
-          "start_line": 206,
-          "end_line": 391,
+          "sig": "get_cache_disk_usage(project_dirs, include_global_caches, include_settings_dirs)",
+          "start_line": 207,
+          "end_line": 403,
           "doc": "Scan and compute disk usage for all temporary cache stores across appdata, temp dirs, and project folders."
         },
         {
           "name": "purge_caches",
-          "sig": "purge_caches(clear_thumbnails, clear_waveforms, clear_audio_extracts, project_dirs)",
-          "start_line": 394,
-          "end_line": 516,
+          "sig": "purge_caches(clear_thumbnails, clear_waveforms, clear_audio_extracts, project_dirs, include_global_caches)",
+          "start_line": 406,
+          "end_line": 546,
           "doc": "Purge requested cache stores safely from disk."
         }
       ]
@@ -2213,7 +2213,7 @@
     },
     "diagnostics/cloud_storage_tests.py": {
       "path": "diagnostics/cloud_storage_tests.py",
-      "lines": 592,
+      "lines": 604,
       "summary": "Plugin interface, project persistence, cache management, YouTube & backup diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2221,42 +2221,42 @@
           "name": "DiagnosticCloudStorageTestsMixin",
           "bases": [],
           "start_line": 15,
-          "end_line": 592,
+          "end_line": 604,
           "doc": "",
           "methods": [
             {
               "name": "_test_plugin_interface_sandbox_testing",
               "sig": "_test_plugin_interface_sandbox_testing(self, item)",
               "start_line": 16,
-              "end_line": 195,
+              "end_line": 199,
               "doc": ""
             },
             {
               "name": "_test_project_file_integrity_and_portable_path_resolution",
               "sig": "_test_project_file_integrity_and_portable_path_resolution(self, item)",
-              "start_line": 197,
-              "end_line": 301,
+              "start_line": 201,
+              "end_line": 305,
               "doc": ""
             },
             {
               "name": "_test_temporary_cache_management_and_storage_inspection",
               "sig": "_test_temporary_cache_management_and_storage_inspection(self, item)",
-              "start_line": 303,
-              "end_line": 402,
+              "start_line": 307,
+              "end_line": 414,
               "doc": "Validates cache usage stats calculation, preview categorization, and cache purging."
             },
             {
               "name": "_test_youtube_data_api_and_direct_video_upload_engine",
               "sig": "_test_youtube_data_api_and_direct_video_upload_engine(self, item)",
-              "start_line": 404,
-              "end_line": 479,
+              "start_line": 416,
+              "end_line": 491,
               "doc": "Validates YouTube Zero-Auth manual export packaging (MP4, thumbnail, SRT, metadata .txt with chapters & speakers)."
             },
             {
               "name": "_test_comprehensive_local_and_cloud_backup_and_restore_engine",
               "sig": "_test_comprehensive_local_and_cloud_backup_and_restore_engine(self, item)",
-              "start_line": 481,
-              "end_line": 592,
+              "start_line": 493,
+              "end_line": 604,
               "doc": "Validates state serialization, SHA-256 verification, local backup roundtrip, and cloud payload integrity."
             }
           ]
@@ -2715,7 +2715,7 @@
     },
     "diagnostics/youtube_import_cache_tests.py": {
       "path": "diagnostics/youtube_import_cache_tests.py",
-      "lines": 362,
+      "lines": 365,
       "summary": "Diagnostic tests for YouTube Episode Import, yt-dlp runner, Managed Remote Media Cache, and Shortcut/Guide sync.",
       "exports": [
         "DiagnosticYouTubeImportCacheTestsMixin"
@@ -2725,7 +2725,7 @@
           "name": "DiagnosticYouTubeImportCacheTestsMixin",
           "bases": [],
           "start_line": 10,
-          "end_line": 359,
+          "end_line": 362,
           "doc": "Automated verification mixin for YouTube import & Managed Remote Media Cache.",
           "methods": [
             {
@@ -2739,7 +2739,7 @@
               "name": "_test_managed_remote_media_cache_and_menu_shortcut_sync",
               "sig": "_test_managed_remote_media_cache_and_menu_shortcut_sync(self, item)",
               "start_line": 249,
-              "end_line": 359,
+              "end_line": 362,
               "doc": ""
             }
           ]
@@ -6425,7 +6425,7 @@
     },
     "plugins/github_dialog.py": {
       "path": "plugins/github_dialog.py",
-      "lines": 613,
+      "lines": 614,
       "summary": "GitHub plugins browser and installer dialog with multi-selection.",
       "exports": null,
       "classes": [
@@ -6435,7 +6435,7 @@
             "QDialog"
           ],
           "start_line": 41,
-          "end_line": 610,
+          "end_line": 611,
           "doc": "Browses, downloads, installs, and manages add-ons directly from GitHub releases with multi-selection.",
           "methods": [
             {
@@ -6582,21 +6582,21 @@
               "name": "_cleanup_workers",
               "sig": "_cleanup_workers(self)",
               "start_line": 581,
-              "end_line": 602,
+              "end_line": 603,
               "doc": ""
             },
             {
               "name": "reject",
               "sig": "reject(self)",
-              "start_line": 604,
-              "end_line": 606,
+              "start_line": 605,
+              "end_line": 607,
               "doc": ""
             },
             {
               "name": "closeEvent",
               "sig": "closeEvent(self, event)",
-              "start_line": 608,
-              "end_line": 610,
+              "start_line": 609,
+              "end_line": 611,
               "doc": ""
             }
           ]
@@ -6887,7 +6887,7 @@
     },
     "plugins/manager_dialog.py": {
       "path": "plugins/manager_dialog.py",
-      "lines": 566,
+      "lines": 567,
       "summary": "Plugin and Add-On Manager Dialog for inspecting, enabling, and installing add-ons.",
       "exports": null,
       "classes": [
@@ -6897,7 +6897,7 @@
             "QDialog"
           ],
           "start_line": 41,
-          "end_line": 563,
+          "end_line": 564,
           "doc": "GUI Dialog for viewing, managing, enabling, installing, and removing plugins with multi-selection.",
           "methods": [
             {
@@ -7023,21 +7023,21 @@
               "name": "_cleanup_workers",
               "sig": "_cleanup_workers(self)",
               "start_line": 534,
-              "end_line": 555,
+              "end_line": 556,
               "doc": ""
             },
             {
               "name": "reject",
               "sig": "reject(self)",
-              "start_line": 557,
-              "end_line": 559,
+              "start_line": 558,
+              "end_line": 560,
               "doc": ""
             },
             {
               "name": "closeEvent",
               "sig": "closeEvent(self, event)",
-              "start_line": 561,
-              "end_line": 563,
+              "start_line": 562,
+              "end_line": 564,
               "doc": ""
             }
           ]
@@ -20428,7 +20428,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 856,
-      "summary": "Radio & TV Segmenter v3.10.34-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.35-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

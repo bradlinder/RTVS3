@@ -139,6 +139,10 @@ class DiagnosticCloudStorageTestsMixin:
                     self.started = False
                 def start(self):
                     self.started = True
+                def isRunning(self) -> bool:
+                    return False
+                def requestInterruption(self):
+                    pass
 
             class DummyMgr:
                 def __init__(self):
@@ -326,8 +330,12 @@ class DiagnosticCloudStorageTestsMixin:
             cache_thumbs.mkdir(parents=True, exist_ok=True)
             (cache_thumbs / "thumb_01.jpg").write_bytes(b"THUMB_DATA_" * 50)
 
-            # 2. Test get_cache_disk_usage with project_dirs
-            stats = get_cache_disk_usage(project_dirs=[proj_dir])
+            # 2. Test get_cache_disk_usage with isolated project_dirs
+            stats = get_cache_disk_usage(
+                project_dirs=[proj_dir],
+                include_global_caches=False,
+                include_settings_dirs=False,
+            )
             if stats["waveforms"]["count"] < 1:
                 raise AssertionError("get_cache_disk_usage did not find waveform peak file")
             if stats["thumbnails"]["count"] < 1:
@@ -335,68 +343,72 @@ class DiagnosticCloudStorageTestsMixin:
             if stats["total_bytes"] <= 0:
                 raise AssertionError("Total bytes reported as 0")
 
-            # 3. Test selective purge
+            # 3. Test selective purge (strictly scoped to temp project_dirs)
             files_del, bytes_freed = purge_caches(
                 clear_thumbnails=True,
                 clear_waveforms=False,
                 clear_audio_extracts=False,
                 project_dirs=[proj_dir],
+                include_global_caches=False,
             )
             if files_del < 1 or bytes_freed <= 0:
                 raise AssertionError(f"purge_caches failed to clear thumbnails: {files_del} files, {bytes_freed} bytes")
             if not (cache_peaks / "audio.peaks").exists():
                 raise AssertionError("Waveform peak file was unexpectedly deleted during thumbnails-only purge")
 
-            # 4. Test remaining purge
+            # 4. Test remaining purge (strictly scoped to temp project_dirs)
             files_del2, bytes_freed2 = purge_caches(
                 clear_thumbnails=False,
                 clear_waveforms=True,
                 clear_audio_extracts=True,
                 project_dirs=[proj_dir],
+                include_global_caches=False,
             )
             if files_del2 < 1:
                 raise AssertionError(f"purge_caches failed to clear remaining peaks: {files_del2} files")
 
-        # 5. Test cleanup_old_thumbnail_cache with active session protection & stale purging
+        # 5. Test cleanup_old_thumbnail_cache with active session protection & stale purging (isolated temp dir)
         from cache_manager import (
             cleanup_old_thumbnail_cache,
             register_active_thumbnail_dir,
             unregister_active_thumbnail_dir,
         )
-        base_thumb = Path(tempfile.gettempdir()) / "radio_tv_story_segmenter_thumbnails"
-        base_thumb.mkdir(parents=True, exist_ok=True)
-        active_sub = base_thumb / f"test_active_{os.getpid()}"
-        active_sub.mkdir(parents=True, exist_ok=True)
-        (active_sub / "frame_01.jpg").write_bytes(b"ACTIVE_FRAME")
-        old_time = time.time() - (48 * 3600)
-        os.utime(str(active_sub), (old_time, old_time))
-        os.utime(str(active_sub / "frame_01.jpg"), (old_time, old_time))
+        with tempfile.TemporaryDirectory() as tmp_dir2:
+            base_thumb = Path(tmp_dir2) / "radio_tv_story_segmenter_thumbnails"
+            base_thumb.mkdir(parents=True, exist_ok=True)
+            active_sub = base_thumb / f"test_active_{os.getpid()}"
+            active_sub.mkdir(parents=True, exist_ok=True)
+            (active_sub / "frame_01.jpg").write_bytes(b"ACTIVE_FRAME")
+            old_time = time.time() - (48 * 3600)
+            os.utime(str(active_sub), (old_time, old_time))
+            os.utime(str(active_sub / "frame_01.jpg"), (old_time, old_time))
 
-        stale_sub = base_thumb / f"test_stale_{os.getpid()}"
-        stale_sub.mkdir(parents=True, exist_ok=True)
-        (stale_sub / "stale_01.jpg").write_bytes(b"STALE_FRAME")
-        os.utime(str(stale_sub), (old_time, old_time))
-        os.utime(str(stale_sub / "stale_01.jpg"), (old_time, old_time))
+            stale_sub = base_thumb / f"test_stale_{os.getpid()}"
+            stale_sub.mkdir(parents=True, exist_ok=True)
+            (stale_sub / "stale_01.jpg").write_bytes(b"STALE_FRAME")
+            os.utime(str(stale_sub), (old_time, old_time))
+            os.utime(str(stale_sub / "stale_01.jpg"), (old_time, old_time))
 
-        register_active_thumbnail_dir(active_sub)
-        try:
-            cleanup_old_thumbnail_cache(max_age_hours=24, blocking=True)
-            if not active_sub.exists():
-                raise AssertionError("cleanup_old_thumbnail_cache deleted an active session thumbnail directory!")
-            if stale_sub.exists():
-                raise AssertionError("cleanup_old_thumbnail_cache failed to delete stale thumbnail directory!")
-        finally:
-            unregister_active_thumbnail_dir(active_sub)
-            if active_sub.exists():
-                shutil.rmtree(active_sub, ignore_errors=True)
-            if stale_sub.exists():
-                shutil.rmtree(stale_sub, ignore_errors=True)
+            register_active_thumbnail_dir(active_sub)
+            try:
+                cleanup_old_thumbnail_cache(max_age_hours=24, blocking=True, base_dir=base_thumb)
+                if not active_sub.exists():
+                    raise AssertionError("cleanup_old_thumbnail_cache deleted an active session thumbnail directory!")
+                if stale_sub.exists():
+                    raise AssertionError("cleanup_old_thumbnail_cache failed to delete stale thumbnail directory!")
+            finally:
+                unregister_active_thumbnail_dir(active_sub)
 
-        # 6. Test serialize_models_inventory from backup_manager
+        # 6. Test serialize_models_inventory from backup_manager using an isolated temp models dir
         from backup_manager import serialize_models_inventory
-        models_inv = serialize_models_inventory()
-        if not isinstance(models_inv, list):
-            raise AssertionError("serialize_models_inventory must return a list")
+        with tempfile.TemporaryDirectory() as tmp_models_dir:
+            fake_models = Path(tmp_models_dir) / "models"
+            sample_model = fake_models / "sample-model"
+            sample_model.mkdir(parents=True, exist_ok=True)
+            (sample_model / "weights.bin").write_bytes(b"MODEL_DATA" * 128)
+            models_inv = serialize_models_inventory(models_dir_override=fake_models)
+            if not isinstance(models_inv, list) or not any(m.get("name") == "sample-model" for m in models_inv):
+                raise AssertionError(f"serialize_models_inventory failed on isolated models dir: {models_inv}")
 
         item.status = "PASS"
         item.message = "Cache disk usage calculation, preview breakdown, active-guarded purging, and model inventory verified"

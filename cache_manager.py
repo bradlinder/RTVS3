@@ -78,6 +78,7 @@ def cleanup_old_thumbnail_cache(
     active_dir: Path | str | None = None,
     exclude_dirs: list | set | None = None,
     blocking: bool = False,
+    base_dir: Path | str | None = None,
 ) -> threading.Thread | None:
     """Purge temporary thumbnail directories older than max_age_hours in a background thread.
     
@@ -86,7 +87,7 @@ def cleanup_old_thumbnail_cache(
     """
     def _worker():
         try:
-            base = Path(tempfile.gettempdir()) / "radio_tv_story_segmenter_thumbnails"
+            base = Path(base_dir) if base_dir is not None else (Path(tempfile.gettempdir()) / "radio_tv_story_segmenter_thumbnails")
             if not base.exists():
                 return
             cutoff = time.time() - (max(0.001, float(max_age_hours)) * 3600)
@@ -203,7 +204,11 @@ def cleanup_old_thumbnail_cache(
     return t
 
 
-def get_cache_disk_usage(project_dirs=None) -> dict:
+def get_cache_disk_usage(
+    project_dirs=None,
+    include_global_caches: bool = True,
+    include_settings_dirs: bool = True,
+) -> dict:
     """Scan and compute disk usage for all temporary cache stores across appdata, temp dirs, and project folders.
     
     Returns a dict with statistics for:
@@ -218,23 +223,24 @@ def get_cache_disk_usage(project_dirs=None) -> dict:
 
     # Auto-populate search dirs from QSettings if not provided
     p_candidates = list(project_dirs or [])
-    try:
-        settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
-        for key in ("default_project_directory", "last_saved_project_path", "last_open_directory"):
-            val = settings.value(key)
-            if val:
-                p_candidates.append(val)
-        recents = settings.value("recent_projects")
-        if recents:
-            if isinstance(recents, str):
-                try:
-                    recents = json.loads(recents)
-                except Exception:
-                    recents = [recents]
-            if isinstance(recents, (list, tuple)):
-                p_candidates.extend(recents)
-    except Exception:
-        pass
+    if include_settings_dirs:
+        try:
+            settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
+            for key in ("default_project_directory", "last_saved_project_path", "last_open_directory"):
+                val = settings.value(key)
+                if val:
+                    p_candidates.append(val)
+            recents = settings.value("recent_projects")
+            if recents:
+                if isinstance(recents, str):
+                    try:
+                        recents = json.loads(recents)
+                    except Exception:
+                        recents = [recents]
+                if isinstance(recents, (list, tuple)):
+                    p_candidates.extend(recents)
+        except Exception:
+            pass
 
     for p in p_candidates:
         if p:
@@ -250,10 +256,11 @@ def get_cache_disk_usage(project_dirs=None) -> dict:
     # 1. Video Thumbnails
     thumb_bytes = 0
     thumb_files = 0
-    thumb_locations = [
-        Path(tempfile.gettempdir()) / "radio_tv_story_segmenter_thumbnails",
-        get_app_data_dir() / "cache" / "thumbnails",
-    ]
+    default_thumb_path = Path(tempfile.gettempdir()) / "radio_tv_story_segmenter_thumbnails"
+    thumb_locations = (
+        [default_thumb_path, get_app_data_dir() / "cache" / "thumbnails"]
+        if include_global_caches else []
+    )
     for pd in search_dirs:
         t_cand = pd / ".cache" / "thumbnails"
         if t_cand not in thumb_locations:
@@ -276,7 +283,7 @@ def get_cache_disk_usage(project_dirs=None) -> dict:
 
     stats["thumbnails"] = {
         "label": "Video Thumbnails & Filmstrips",
-        "path": thumb_locations[0],
+        "path": thumb_locations[0] if thumb_locations else default_thumb_path,
         "count": thumb_files,
         "bytes": thumb_bytes,
     }
@@ -284,9 +291,8 @@ def get_cache_disk_usage(project_dirs=None) -> dict:
     # 2. Waveform Peaks Cache (AppData + Project .cache/peaks/ + legacy adjacent .peaks)
     peaks_bytes = 0
     peaks_files = 0
-    peak_locations = [
-        get_app_data_dir() / "cache" / "peaks",
-    ]
+    default_peaks_path = get_app_data_dir() / "cache" / "peaks" if include_global_caches else Path(tempfile.gettempdir())
+    peak_locations = [default_peaks_path] if include_global_caches else []
     for pd in search_dirs:
         p_cand = pd / ".cache" / "peaks"
         if p_cand not in peak_locations:
@@ -308,19 +314,20 @@ def get_cache_disk_usage(project_dirs=None) -> dict:
                 pass
 
     # Scan any legacy .peaks directly in app cache root or active project folders
-    cache_root = get_app_data_dir() / "cache"
-    if cache_root.exists() and cache_root.is_dir():
-        try:
-            for p in cache_root.glob("*.peaks"):
-                if p.is_file() and str(p.resolve()) not in seen_peak_files:
-                    seen_peak_files.add(str(p.resolve()))
-                    peaks_files += 1
-                    try:
-                        peaks_bytes += p.stat().st_size
-                    except Exception:
-                        pass
-        except Exception:
-            pass
+    if include_global_caches:
+        cache_root = get_app_data_dir() / "cache"
+        if cache_root.exists() and cache_root.is_dir():
+            try:
+                for p in cache_root.glob("*.peaks"):
+                    if p.is_file() and str(p.resolve()) not in seen_peak_files:
+                        seen_peak_files.add(str(p.resolve()))
+                        peaks_files += 1
+                        try:
+                            peaks_bytes += p.stat().st_size
+                        except Exception:
+                            pass
+            except Exception:
+                pass
 
     for pd in search_dirs:
         try:
@@ -337,7 +344,7 @@ def get_cache_disk_usage(project_dirs=None) -> dict:
 
     stats["waveforms"] = {
         "label": "Audio Waveform Peaks",
-        "path": peak_locations[0],
+        "path": peak_locations[0] if peak_locations else default_peaks_path,
         "count": peaks_files,
         "bytes": peaks_bytes,
     }
@@ -345,11 +352,15 @@ def get_cache_disk_usage(project_dirs=None) -> dict:
     # 3. Temporary Audio Extracts & Scratch Workfiles
     audio_bytes = 0
     audio_files = 0
-    audio_locations = [
-        Path(tempfile.gettempdir()) / "prs_audio_extracts",
-        get_app_data_dir() / "cache" / "audio",
-        get_app_data_dir() / "cache" / "temp",
-    ]
+    default_audio_path = Path(tempfile.gettempdir()) / "prs_audio_extracts"
+    audio_locations = (
+        [
+            default_audio_path,
+            get_app_data_dir() / "cache" / "audio",
+            get_app_data_dir() / "cache" / "temp",
+        ]
+        if include_global_caches else []
+    )
     for pd in search_dirs:
         a_cand = pd / ".cache" / "audio"
         if a_cand not in audio_locations:
@@ -366,22 +377,23 @@ def get_cache_disk_usage(project_dirs=None) -> dict:
                             pass
             except Exception:
                 pass
-    temp_dir = Path(tempfile.gettempdir())
-    try:
-        for pat in ("prs_tmp_*.wav", "rtvs_tmp_*.wav", "prs_extract_*.wav", "rtvs_diarization_*.wav", "rtvs_translate_*", "rtvs_wp_*"):
-            for p in temp_dir.glob(pat):
-                if p.is_file():
-                    audio_files += 1
-                    try:
-                        audio_bytes += p.stat().st_size
-                    except Exception:
-                        pass
-    except Exception:
-        pass
+    if include_global_caches:
+        temp_dir = Path(tempfile.gettempdir())
+        try:
+            for pat in ("prs_tmp_*.wav", "rtvs_tmp_*.wav", "prs_extract_*.wav", "rtvs_diarization_*.wav", "rtvs_translate_*", "rtvs_wp_*"):
+                for p in temp_dir.glob(pat):
+                    if p.is_file():
+                        audio_files += 1
+                        try:
+                            audio_bytes += p.stat().st_size
+                        except Exception:
+                            pass
+        except Exception:
+            pass
 
     stats["audio_extracts"] = {
         "label": "Temporary Audio Workfiles",
-        "path": audio_locations[0],
+        "path": audio_locations[0] if audio_locations else default_audio_path,
         "count": audio_files,
         "bytes": audio_bytes,
     }
@@ -391,7 +403,13 @@ def get_cache_disk_usage(project_dirs=None) -> dict:
     return stats
 
 
-def purge_caches(clear_thumbnails=True, clear_waveforms=True, clear_audio_extracts=True, project_dirs=None) -> tuple[int, int]:
+def purge_caches(
+    clear_thumbnails=True,
+    clear_waveforms=True,
+    clear_audio_extracts=True,
+    project_dirs=None,
+    include_global_caches: bool = True,
+) -> tuple[int, int]:
     """Purge requested cache stores safely from disk.
     
     Returns:
@@ -413,10 +431,13 @@ def purge_caches(clear_thumbnails=True, clear_waveforms=True, clear_audio_extrac
                     pass
 
     if clear_thumbnails:
-        thumb_locations = [
-            Path(tempfile.gettempdir()) / "radio_tv_story_segmenter_thumbnails",
-            get_app_data_dir() / "cache" / "thumbnails",
-        ]
+        thumb_locations = (
+            [
+                Path(tempfile.gettempdir()) / "radio_tv_story_segmenter_thumbnails",
+                get_app_data_dir() / "cache" / "thumbnails",
+            ]
+            if include_global_caches else []
+        )
         for pd in search_dirs:
             t_cand = pd / ".cache" / "thumbnails"
             if t_cand not in thumb_locations:
@@ -439,9 +460,10 @@ def purge_caches(clear_thumbnails=True, clear_waveforms=True, clear_audio_extrac
                     pass
 
     if clear_waveforms:
-        peak_locations = [
-            get_app_data_dir() / "cache" / "peaks",
-        ]
+        peak_locations = (
+            [get_app_data_dir() / "cache" / "peaks"]
+            if include_global_caches else []
+        )
         for pd in search_dirs:
             p_cand = pd / ".cache" / "peaks"
             if p_cand not in peak_locations:
@@ -478,11 +500,18 @@ def purge_caches(clear_thumbnails=True, clear_waveforms=True, clear_audio_extrac
                 pass
 
     if clear_audio_extracts:
-        audio_locations = [
-            Path(tempfile.gettempdir()) / "prs_audio_extracts",
-            get_app_data_dir() / "cache" / "audio",
-            get_app_data_dir() / "cache" / "temp",
-        ]
+        audio_locations = (
+            [
+                Path(tempfile.gettempdir()) / "prs_audio_extracts",
+                get_app_data_dir() / "cache" / "audio",
+                get_app_data_dir() / "cache" / "temp",
+            ]
+            if include_global_caches else []
+        )
+        for pd in search_dirs:
+            a_cand = pd / ".cache" / "audio"
+            if a_cand not in audio_locations:
+                audio_locations.append(a_cand)
         for audio_dir in audio_locations:
             if audio_dir.exists():
                 try:
@@ -498,20 +527,21 @@ def purge_caches(clear_thumbnails=True, clear_waveforms=True, clear_audio_extrac
                     shutil.rmtree(audio_dir, ignore_errors=True)
                 except Exception:
                     pass
-        temp_dir = Path(tempfile.gettempdir())
-        try:
-            for pat in ("prs_tmp_*.wav", "rtvs_tmp_*.wav", "prs_extract_*.wav", "rtvs_diarization_*.wav", "rtvs_translate_*", "rtvs_wp_*"):
-                for p in list(temp_dir.glob(pat)):
-                    if p.is_file():
-                        try:
-                            sz = p.stat().st_size
-                            p.unlink(missing_ok=True)
-                            freed_bytes += sz
-                            freed_files += 1
-                        except Exception:
-                            pass
-        except Exception:
-            pass
+        if include_global_caches:
+            temp_dir = Path(tempfile.gettempdir())
+            try:
+                for pat in ("prs_tmp_*.wav", "rtvs_tmp_*.wav", "prs_extract_*.wav", "rtvs_diarization_*.wav", "rtvs_translate_*", "rtvs_wp_*"):
+                    for p in list(temp_dir.glob(pat)):
+                        if p.is_file():
+                            try:
+                                sz = p.stat().st_size
+                                p.unlink(missing_ok=True)
+                                freed_bytes += sz
+                                freed_files += 1
+                            except Exception:
+                                pass
+            except Exception:
+                pass
 
     return freed_files, freed_bytes
 
