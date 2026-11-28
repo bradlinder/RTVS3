@@ -1084,39 +1084,93 @@ class MediaBatchMixin:
 
     def open_document_path(self, path):
         path = Path(path).resolve()
-        if not path.exists(): return False
+        if not path.exists():
+            return False
         if not self.batch_active and (self.audio_file or self.transcript or self.project_file):
-            if not self.prepare_for_new_media(): return False
+            if not self.prepare_for_new_media():
+                return False
         try:
             text = read_document_text(path)
         except Exception as exc:
+            if hasattr(self, "log_activity"):
+                self.log_activity(f"[ERROR] Failed to open document '{path.name}': {exc}")
             if not self.batch_active:
                 QMessageBox.critical(self, "Open Document Error", f"Could not read document:\n\n{exc}")
             return False
+
         lines = text.splitlines()
-        segments=[]; cursor=0.0
+        segments = []
+        cursor = 0.0
         for line in lines:
-            value=line.strip()
+            value = line.strip()
             if value:
-                segments.append({"text":value,"start":cursor,"end":cursor})
+                segments.append({"text": value, "start": cursor, "end": cursor})
                 cursor += 0.001
-        # Clear active media player source and waveform peaks when switching to document-only mode
+
+        # Clear active media player, thumbnail worker, and timeline state when switching to document-only mode
         if hasattr(self, "player") and self.player:
             self.player.stop()
             self.player.setSource(QUrl())
-        if hasattr(self, "timeline"):
-            self.timeline.set_waveform_peaks([])
-            self.timeline.set_audio_filename(None)
+        if hasattr(self, "stop_video_thumbnail_worker"):
+            try:
+                self.stop_video_thumbnail_worker()
+            except Exception:
+                pass
+        try:
+            from cache_manager import unregister_active_thumbnail_dir
+            unregister_active_thumbnail_dir(getattr(self, "video_thumbnail_dir", None))
+        except Exception:
+            pass
+        self.video_thumbnail_dir = None
+        self._loaded_thumbnail_key = None
+        self._active_thumbnail_key = None
+        self.current_media_is_video = False
 
-        self.audio_file=None; self.project_file=None; self.duration=0.0
-        self.transcript={"text":text,"segments":segments,"language":"en"}
-        self.diarization=None; self.stories=[]; self.translations={}; self.translation_display_mode="en"
-        self.project_dirty=True
-        if hasattr(self, "save_action"): self.save_action.setEnabled(True)
-        if hasattr(self, "save_as_action"): self.save_as_action.setEnabled(True)
-        if hasattr(self, "quick_save_button"): self.quick_save_button.setEnabled(True)
-        self.update_translation_language_selector(); self.render_transcript(); self.update_processing_menu_status(); self.set_tools_actions_enabled(True)
+        if hasattr(self, "timeline") and self.timeline:
+            self.timeline.set_duration(1)
+            self.timeline.set_position(0)
+            self.timeline.set_stories([])
+            self.timeline.set_waveform_peaks([])
+            self.timeline.set_zoom(1.0)
+            self.timeline.scroll_offset = 0.0
+            self.timeline.set_audio_filename(None)
+            if hasattr(self.timeline, "set_video_thumbnails"):
+                self.timeline.set_video_thumbnails([])
+        if hasattr(self, "story_list") and self.story_list is not None:
+            self.story_list.clear()
+
+        self.audio_file = None
+        self.project_file = None
+        self.duration = 0.0
+        self.transcript = {"text": text, "segments": segments, "language": "en"}
+        self.diarization = None
+        self.stories = []
+        self.current_selected_story_indices = []
+        self.translations = {}
+        self.translation_display_mode = "en"
+        self.project_metadata = {}
+        self.segment_speaker_overrides = {}
+        self.speaker_names = {}
+        self.project_dirty = True
+
+        if hasattr(self, "save_action") and self.save_action is not None:
+            self.save_action.setEnabled(True)
+        if hasattr(self, "save_as_action") and self.save_as_action is not None:
+            self.save_as_action.setEnabled(True)
+        if hasattr(self, "quick_save_button") and self.quick_save_button is not None:
+            self.quick_save_button.setEnabled(True)
+        if hasattr(self, "redownload_remote_media_action") and self.redownload_remote_media_action is not None:
+            self.redownload_remote_media_action.setEnabled(False)
+        if hasattr(self, "update_window_title"):
+            self.update_window_title()
+
+        self.update_translation_language_selector()
+        self.render_transcript()
+        self.update_processing_menu_status()
+        self.set_tools_actions_enabled(True)
         self.statusBar().showMessage(f"Document loaded: {path.name}")
+        if hasattr(self, "log_activity"):
+            self.log_activity(f"[FILE] Imported document: {path}")
         return True
 
     def open_clear_cache_dialog(self):
@@ -1437,60 +1491,31 @@ class MediaBatchMixin:
             self.toggle_stories_action.setText(f"&{vocab.panel_title}")
 
     def open_document(self):
-        filters = (
-            "Supported Documents (*.txt *.docx *.pdf *.html *.htm *.md);;"
-            "Text Files (*.txt *.md);;"
-            "Word Documents (*.docx);;"
-            "PDF Files (*.pdf);;"
-            "HTML Files (*.html *.htm);;"
-            "All Files (*)"
-        )
+        has_pdf = is_pdf_reading_available()
+        if has_pdf:
+            filters = (
+                "Supported Documents (*.txt *.docx *.pdf *.html *.htm *.md);;"
+                "Text Files (*.txt *.md);;"
+                "Word Documents (*.docx);;"
+                "PDF Files (*.pdf);;"
+                "HTML Files (*.html *.htm);;"
+                "All Files (*)"
+            )
+        else:
+            filters = (
+                "Supported Documents (*.txt *.docx *.html *.htm *.md);;"
+                "Text Files (*.txt *.md);;"
+                "Word Documents (*.docx);;"
+                "HTML Files (*.html *.htm);;"
+                "All Files (*)"
+            )
         filename, _ = QFileDialog.getOpenFileName(self, "Open Document", self._dialog_directory(), filters)
         if not filename:
-            return
+            return False
 
         path = Path(filename).resolve()
         self._remember_open_directory(path)
-
-        if self.audio_file or self.transcript or self.project_file:
-            if not self.prepare_for_new_media():
-                return
-
-        try:
-            text = read_document_text(path)
-        except Exception as exc:
-            self.log_activity(f"[ERROR] Failed to open document '{path.name}': {exc}")
-            QMessageBox.critical(self, "Open Document Error", f"Could not read document:\n\n{exc}")
-            return
-
-        lines = text.splitlines()
-        segments = []
-        cursor = 0.0
-
-        for line in lines:
-            value = line.strip()
-            if value:
-                segments.append({"text": value, "start": cursor, "end": cursor})
-                cursor += 0.001
-
-        self.audio_file = None
-        self.project_file = None
-        self.duration = 0.0
-        self.transcript = {"text": text, "segments": segments, "language": "en"}
-        self.diarization = None
-        self.stories = []
-        self.translations = {}
-        self.translation_display_mode = "en"
-        self.project_dirty = True
-        if hasattr(self, "update_window_title"):
-            self.update_window_title()
-
-        self.update_translation_language_selector()
-        self.render_transcript()
-        self.update_processing_menu_status()
-        self.set_tools_actions_enabled(True)
-        self.statusBar().showMessage(f"Document loaded: {path.name}")
-        self.log_activity(f"[FILE] Imported document: {path}")
+        return self.open_document_path(path)
 
     def export_text_file(self):
         if not self.transcript: QMessageBox.warning(self,"No Text","There is no transcript/text to export."); return

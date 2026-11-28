@@ -11,6 +11,7 @@ Provides utilities for:
 import json
 import os
 import shutil
+import sys
 import tempfile
 import threading
 import time
@@ -29,9 +30,13 @@ try:
         QPushButton,
         QVBoxLayout,
     )
+    from cache_workers import CacheScanWorker, CachePurgeWorker, detach_cache_worker
 except ImportError:
     QDialog = object
     QSettings = None
+    CacheScanWorker = None
+    CachePurgeWorker = None
+    detach_cache_worker = None
 
 from core_utils import get_app_data_dir, format_byte_size
 
@@ -204,6 +209,144 @@ def cleanup_old_thumbnail_cache(
     return t
 
 
+_TMP_AUDIO_WAV_PREFIXES = ("prs_tmp_", "rtvs_tmp_", "prs_extract_", "rtvs_diarization_")
+_TMP_AUDIO_ANY_PREFIXES = ("rtvs_translate_", "rtvs_wp_")
+_FILE_SUFFIX_HINTS = {
+    ".rtvs", ".json", ".mp3", ".wav", ".m4a", ".aac", ".flac", ".ogg", ".oga",
+    ".opus", ".wma", ".aiff", ".aif", ".mp4", ".m4v", ".mov", ".mkv", ".avi", ".webm",
+}
+
+
+def _is_temp_audio_workfile(name: str) -> bool:
+    """Return True if *name* matches any temporary audio/translation/wp scratch file pattern."""
+    low = name.lower()
+    if low.startswith(_TMP_AUDIO_ANY_PREFIXES):
+        return True
+    return low.endswith(".wav") and low.startswith(_TMP_AUDIO_WAV_PREFIXES)
+
+
+def _is_network_path(path: Path | str | None) -> bool:
+    """Return True if *path* points to a UNC share or mapped network drive."""
+    if not path:
+        return False
+    try:
+        from thumbnail_workers import is_network_path as _tw_is_network_path
+        return bool(_tw_is_network_path(path))
+    except Exception:
+        pass
+    raw = str(path).strip()
+    if not raw:
+        return False
+    if raw.startswith("\\\\") or raw.startswith("//"):
+        return True
+    if sys.platform == "win32":
+        try:
+            drive, _ = os.path.splitdrive(os.path.abspath(raw))
+            if drive.startswith("\\\\") or drive.startswith("//"):
+                return True
+            if len(drive) == 2 and drive[1] == ":":
+                import ctypes
+                return ctypes.windll.kernel32.GetDriveTypeW(drive + "\\") == 4
+        except Exception:
+            pass
+    return False
+
+
+def _norm_dedup_key(path_str: str) -> str:
+    return os.path.normcase(os.path.abspath(path_str))
+
+
+def _resolve_local_search_dirs(raw_dirs, skip_network: bool = True, cancel_check=None) -> list[Path]:
+    """Deduplicate and resolve candidate project directories without touching network shares."""
+    search_dirs: list[Path] = []
+    seen_dirs: set[str] = set()
+    for raw in raw_dirs or ():
+        if cancel_check is not None and cancel_check():
+            break
+        if not raw:
+            continue
+        raw_str = str(raw).strip()
+        if not raw_str:
+            continue
+        if skip_network and _is_network_path(raw_str):
+            continue
+        try:
+            cand = os.path.abspath(raw_str)
+            _, ext = os.path.splitext(cand)
+            if ext.lower() in _FILE_SUFFIX_HINTS:
+                cand = os.path.dirname(cand)
+            key = os.path.normcase(cand)
+            if key in seen_dirs:
+                continue
+            if os.path.isfile(cand):
+                cand = os.path.dirname(cand)
+                key = os.path.normcase(cand)
+                if key in seen_dirs:
+                    continue
+            if os.path.isdir(cand):
+                seen_dirs.add(key)
+                search_dirs.append(Path(cand))
+        except Exception:
+            pass
+    return search_dirs
+
+
+def _walk_cache_tree(
+    root_dir: Path,
+    suffix: str | None = None,
+    recursive: bool = True,
+    seen: set[str] | None = None,
+    delete: bool = False,
+    remove_root: bool = False,
+    cancel_check=None,
+) -> tuple[int, int]:
+    """Iterative os.scandir() walker that counts or deletes matching files, returning (count, bytes)."""
+    count = 0
+    total_bytes = 0
+    root_str = str(root_dir)
+    if not os.path.isdir(root_str):
+        return 0, 0
+    stack = [root_str]
+    while stack:
+        if cancel_check is not None and cancel_check():
+            return count, total_bytes
+        curr = stack.pop()
+        try:
+            with os.scandir(curr) as it:
+                entries = list(it) if delete else it
+                for idx, entry in enumerate(entries):
+                    if cancel_check is not None and (idx & 63) == 0 and cancel_check():
+                        return count, total_bytes
+                    try:
+                        if entry.is_dir(follow_symlinks=False):
+                            if recursive:
+                                stack.append(entry.path)
+                        elif entry.is_file(follow_symlinks=False):
+                            if suffix is not None and not entry.name.lower().endswith(suffix):
+                                continue
+                            if seen is not None:
+                                key = _norm_dedup_key(entry.path)
+                                if key in seen:
+                                    continue
+                                seen.add(key)
+                            sz = 0
+                            try:
+                                sz = entry.stat(follow_symlinks=False).st_size
+                            except Exception:
+                                pass
+                            if delete:
+                                os.unlink(entry.path)
+                            total_bytes += sz
+                            count += 1
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+    if delete and remove_root and (cancel_check is None or not cancel_check()):
+        shutil.rmtree(root_dir, ignore_errors=True)
+    return count, total_bytes
+
+
 def collect_settings_project_dirs() -> list:
     """Collect candidate project directories from QSettings on the GUI thread."""
     p_candidates = []
@@ -234,6 +377,7 @@ def get_cache_disk_usage(
     include_global_caches: bool = True,
     include_settings_dirs: bool = True,
     cancel_check=None,
+    skip_network_dirs: bool = True,
 ) -> dict:
     """Scan and compute disk usage for all temporary cache stores across appdata, temp dirs, and project folders.
     
@@ -245,7 +389,6 @@ def get_cache_disk_usage(
       - 'total_files': int
     """
     stats = {}
-    search_dirs = []
 
     def _cancelled() -> bool:
         if cancel_check is None:
@@ -260,18 +403,11 @@ def get_cache_disk_usage(
     if include_settings_dirs:
         p_candidates.extend(collect_settings_project_dirs())
 
-    for p in p_candidates:
-        if _cancelled():
-            break
-        if p:
-            try:
-                pd = Path(p).resolve()
-                if pd.is_file():
-                    pd = pd.parent
-                if pd.exists() and pd not in search_dirs:
-                    search_dirs.append(pd)
-            except Exception:
-                pass
+    search_dirs = _resolve_local_search_dirs(
+        p_candidates,
+        skip_network=skip_network_dirs,
+        cancel_check=_cancelled,
+    )
 
     # 1. Video Thumbnails
     thumb_bytes = 0
@@ -286,24 +422,13 @@ def get_cache_disk_usage(
         if t_cand not in thumb_locations:
             thumb_locations.append(t_cand)
 
-    seen_thumb_files = set()
+    seen_thumb_files: set[str] = set()
     for thumb_dir in thumb_locations:
         if _cancelled():
             break
-        if thumb_dir.exists() and thumb_dir.is_dir():
-            try:
-                for p in thumb_dir.rglob("*"):
-                    if _cancelled():
-                        break
-                    if p.is_file() and str(p.resolve()) not in seen_thumb_files:
-                        seen_thumb_files.add(str(p.resolve()))
-                        thumb_files += 1
-                        try:
-                            thumb_bytes += p.stat().st_size
-                        except Exception:
-                            pass
-            except Exception:
-                pass
+        cnt, bts = _walk_cache_tree(thumb_dir, recursive=True, seen=seen_thumb_files, cancel_check=_cancelled)
+        thumb_files += cnt
+        thumb_bytes += bts
 
     stats["thumbnails"] = {
         "label": "Video Thumbnails & Filmstrips",
@@ -322,59 +447,26 @@ def get_cache_disk_usage(
         if p_cand not in peak_locations:
             peak_locations.append(p_cand)
 
-    seen_peak_files = set()
+    seen_peak_files: set[str] = set()
     for peaks_dir in peak_locations:
         if _cancelled():
             break
-        if peaks_dir.exists() and peaks_dir.is_dir():
-            try:
-                for p in peaks_dir.rglob("*.peaks"):
-                    if _cancelled():
-                        break
-                    if p.is_file() and str(p.resolve()) not in seen_peak_files:
-                        seen_peak_files.add(str(p.resolve()))
-                        peaks_files += 1
-                        try:
-                            peaks_bytes += p.stat().st_size
-                        except Exception:
-                            pass
-            except Exception:
-                pass
+        cnt, bts = _walk_cache_tree(peaks_dir, suffix=".peaks", recursive=True, seen=seen_peak_files, cancel_check=_cancelled)
+        peaks_files += cnt
+        peaks_bytes += bts
 
     # Scan any legacy .peaks directly in app cache root or active project folders
     if include_global_caches and not _cancelled():
-        cache_root = get_app_data_dir() / "cache"
-        if cache_root.exists() and cache_root.is_dir():
-            try:
-                for p in cache_root.glob("*.peaks"):
-                    if _cancelled():
-                        break
-                    if p.is_file() and str(p.resolve()) not in seen_peak_files:
-                        seen_peak_files.add(str(p.resolve()))
-                        peaks_files += 1
-                        try:
-                            peaks_bytes += p.stat().st_size
-                        except Exception:
-                            pass
-            except Exception:
-                pass
+        cnt, bts = _walk_cache_tree(get_app_data_dir() / "cache", suffix=".peaks", recursive=False, seen=seen_peak_files, cancel_check=_cancelled)
+        peaks_files += cnt
+        peaks_bytes += bts
 
     for pd in search_dirs:
         if _cancelled():
             break
-        try:
-            for p in pd.glob("*.peaks"):
-                if _cancelled():
-                    break
-                if p.is_file() and str(p.resolve()) not in seen_peak_files:
-                    seen_peak_files.add(str(p.resolve()))
-                    peaks_files += 1
-                    try:
-                        peaks_bytes += p.stat().st_size
-                    except Exception:
-                        pass
-        except Exception:
-            pass
+        cnt, bts = _walk_cache_tree(pd, suffix=".peaks", recursive=False, seen=seen_peak_files, cancel_check=_cancelled)
+        peaks_files += cnt
+        peaks_bytes += bts
 
     stats["waveforms"] = {
         "label": "Audio Waveform Peaks",
@@ -399,35 +491,30 @@ def get_cache_disk_usage(
         a_cand = pd / ".cache" / "audio"
         if a_cand not in audio_locations:
             audio_locations.append(a_cand)
+
+    seen_audio_files: set[str] = set()
     for audio_dir in audio_locations:
         if _cancelled():
             break
-        if audio_dir.exists() and audio_dir.is_dir():
-            try:
-                for p in audio_dir.rglob("*"):
-                    if _cancelled():
-                        break
-                    if p.is_file():
-                        audio_files += 1
-                        try:
-                            audio_bytes += p.stat().st_size
-                        except Exception:
-                            pass
-            except Exception:
-                pass
+        cnt, bts = _walk_cache_tree(audio_dir, recursive=True, seen=seen_audio_files, cancel_check=_cancelled)
+        audio_files += cnt
+        audio_bytes += bts
+
     if include_global_caches and not _cancelled():
-        temp_dir = Path(tempfile.gettempdir())
+        temp_dir_str = tempfile.gettempdir()
         try:
-            for pat in ("prs_tmp_*.wav", "rtvs_tmp_*.wav", "prs_extract_*.wav", "rtvs_diarization_*.wav", "rtvs_translate_*", "rtvs_wp_*"):
-                if _cancelled():
-                    break
-                for p in temp_dir.glob(pat):
-                    if _cancelled():
+            with os.scandir(temp_dir_str) as it:
+                for idx, entry in enumerate(it):
+                    if (idx & 127) == 0 and _cancelled():
                         break
-                    if p.is_file():
-                        audio_files += 1
+                    if _is_temp_audio_workfile(entry.name):
                         try:
-                            audio_bytes += p.stat().st_size
+                            if entry.is_file(follow_symlinks=False):
+                                key = _norm_dedup_key(entry.path)
+                                if key not in seen_audio_files:
+                                    seen_audio_files.add(key)
+                                    audio_files += 1
+                                    audio_bytes += entry.stat(follow_symlinks=False).st_size
                         except Exception:
                             pass
         except Exception:
@@ -452,6 +539,7 @@ def purge_caches(
     project_dirs=None,
     include_global_caches: bool = True,
     cancel_check=None,
+    skip_network_dirs: bool = True,
 ) -> tuple[int, int]:
     """Purge requested cache stores safely from disk.
     
@@ -468,20 +556,11 @@ def purge_caches(
 
     freed_bytes = 0
     freed_files = 0
-    search_dirs = []
-    if project_dirs:
-        for p in project_dirs:
-            if _cancelled():
-                return freed_files, freed_bytes
-            if p:
-                try:
-                    pd = Path(p).resolve()
-                    if pd.is_file():
-                        pd = pd.parent
-                    if pd.exists() and pd not in search_dirs:
-                        search_dirs.append(pd)
-                except Exception:
-                    pass
+    search_dirs = _resolve_local_search_dirs(
+        project_dirs,
+        skip_network=skip_network_dirs,
+        cancel_check=_cancelled,
+    )
 
     if clear_thumbnails and not _cancelled():
         thumb_locations = (
@@ -499,22 +578,9 @@ def purge_caches(
         for thumb_dir in thumb_locations:
             if _cancelled():
                 return freed_files, freed_bytes
-            if thumb_dir.exists():
-                try:
-                    for p in list(thumb_dir.rglob("*")):
-                        if _cancelled():
-                            return freed_files, freed_bytes
-                        if p.is_file():
-                            try:
-                                sz = p.stat().st_size
-                                p.unlink(missing_ok=True)
-                                freed_bytes += sz
-                                freed_files += 1
-                            except Exception:
-                                pass
-                    shutil.rmtree(thumb_dir, ignore_errors=True)
-                except Exception:
-                    pass
+            cnt, bts = _walk_cache_tree(thumb_dir, recursive=True, delete=True, remove_root=True, cancel_check=_cancelled)
+            freed_files += cnt
+            freed_bytes += bts
 
     if clear_waveforms and not _cancelled():
         peak_locations = (
@@ -529,40 +595,16 @@ def purge_caches(
         for peaks_dir in peak_locations:
             if _cancelled():
                 return freed_files, freed_bytes
-            if peaks_dir.exists():
-                try:
-                    for p in list(peaks_dir.glob("*.peaks")):
-                        if _cancelled():
-                            return freed_files, freed_bytes
-                        if p.is_file():
-                            try:
-                                sz = p.stat().st_size
-                                p.unlink(missing_ok=True)
-                                freed_bytes += sz
-                                freed_files += 1
-                            except Exception:
-                                pass
-                    shutil.rmtree(peaks_dir, ignore_errors=True)
-                except Exception:
-                    pass
+            cnt, bts = _walk_cache_tree(peaks_dir, suffix=".peaks", recursive=True, delete=True, remove_root=True, cancel_check=_cancelled)
+            freed_files += cnt
+            freed_bytes += bts
 
         for pd in search_dirs:
             if _cancelled():
                 return freed_files, freed_bytes
-            try:
-                for p in list(pd.glob("*.peaks")):
-                    if _cancelled():
-                        return freed_files, freed_bytes
-                    if p.is_file():
-                        try:
-                            sz = p.stat().st_size
-                            p.unlink(missing_ok=True)
-                            freed_bytes += sz
-                            freed_files += 1
-                        except Exception:
-                            pass
-            except Exception:
-                pass
+            cnt, bts = _walk_cache_tree(pd, suffix=".peaks", recursive=False, delete=True, remove_root=False, cancel_check=_cancelled)
+            freed_files += cnt
+            freed_bytes += bts
 
     if clear_audio_extracts and not _cancelled():
         audio_locations = (
@@ -580,37 +622,23 @@ def purge_caches(
         for audio_dir in audio_locations:
             if _cancelled():
                 return freed_files, freed_bytes
-            if audio_dir.exists():
-                try:
-                    for p in list(audio_dir.rglob("*")):
-                        if _cancelled():
-                            return freed_files, freed_bytes
-                        if p.is_file():
-                            try:
-                                sz = p.stat().st_size
-                                p.unlink(missing_ok=True)
-                                freed_bytes += sz
-                                freed_files += 1
-                            except Exception:
-                                pass
-                    shutil.rmtree(audio_dir, ignore_errors=True)
-                except Exception:
-                    pass
+            cnt, bts = _walk_cache_tree(audio_dir, recursive=True, delete=True, remove_root=True, cancel_check=_cancelled)
+            freed_files += cnt
+            freed_bytes += bts
         if include_global_caches and not _cancelled():
-            temp_dir = Path(tempfile.gettempdir())
+            temp_dir_str = tempfile.gettempdir()
             try:
-                for pat in ("prs_tmp_*.wav", "rtvs_tmp_*.wav", "prs_extract_*.wav", "rtvs_diarization_*.wav", "rtvs_translate_*", "rtvs_wp_*"):
-                    if _cancelled():
-                        return freed_files, freed_bytes
-                    for p in list(temp_dir.glob(pat)):
-                        if _cancelled():
+                with os.scandir(temp_dir_str) as it:
+                    for idx, entry in enumerate(it):
+                        if (idx & 127) == 0 and _cancelled():
                             return freed_files, freed_bytes
-                        if p.is_file():
+                        if _is_temp_audio_workfile(entry.name):
                             try:
-                                sz = p.stat().st_size
-                                p.unlink(missing_ok=True)
-                                freed_bytes += sz
-                                freed_files += 1
+                                if entry.is_file(follow_symlinks=False):
+                                    sz = entry.stat(follow_symlinks=False).st_size
+                                    os.unlink(entry.path)
+                                    freed_bytes += sz
+                                    freed_files += 1
                             except Exception:
                                 pass
             except Exception:
@@ -788,8 +816,6 @@ class ClearCacheDialog(QDialog):
         self.btn_clear_sel.setEnabled(has_data)
 
     def _start_worker(self, worker):
-        from cache_workers import detach_cache_worker
-
         if self._active_worker is not None:
             detach_cache_worker(self._active_worker)
             self._workers.discard(self._active_worker)
@@ -800,9 +826,7 @@ class ClearCacheDialog(QDialog):
         worker.start()
 
     def refresh_stats(self):
-        from cache_workers import CacheScanWorker
-
-        if self._is_closing:
+        if self._is_closing or CacheScanWorker is None:
             return
         self._worker_gen += 1
         gen = self._worker_gen
@@ -854,8 +878,6 @@ class ClearCacheDialog(QDialog):
         self._set_busy_state(False, f"{prefix} {error_msg}", is_error=True)
 
     def _cleanup_workers(self):
-        from cache_workers import detach_cache_worker
-
         self._is_closing = True
         self._worker_gen += 1
         to_detach = list(self._workers)
@@ -863,8 +885,9 @@ class ClearCacheDialog(QDialog):
             to_detach.append(self._active_worker)
         self._workers.clear()
         self._active_worker = None
-        for w in to_detach:
-            detach_cache_worker(w)
+        if detach_cache_worker is not None:
+            for w in to_detach:
+                detach_cache_worker(w)
 
     def accept(self):
         self._cleanup_workers()
@@ -898,14 +921,13 @@ class ClearCacheDialog(QDialog):
         self._do_purge(clear_thumbs=ct, clear_waves=cw, clear_audio=ca)
 
     def _do_purge(self, clear_thumbs: bool, clear_waves: bool, clear_audio: bool):
-        from cache_workers import CachePurgeWorker
-
-        if self._is_closing:
+        if self._is_closing or CachePurgeWorker is None:
             return
         if self._active_worker is not None and self._active_worker.isRunning():
             return
         self._worker_gen += 1
         gen = self._worker_gen
+        scan_dirs = self._build_scan_dirs()
         self._set_busy_state(
             True,
             "Limpiando cachés seleccionadas..." if self.is_es else "Clearing selected caches...",
@@ -914,8 +936,8 @@ class ClearCacheDialog(QDialog):
             clear_thumbnails=clear_thumbs,
             clear_waveforms=clear_waves,
             clear_audio_extracts=clear_audio,
-            purge_project_dirs=list(self.project_dirs),
-            scan_project_dirs=self._build_scan_dirs(),
+            purge_project_dirs=scan_dirs,
+            scan_project_dirs=scan_dirs,
             include_global_caches=self._include_global_caches,
             include_settings_dirs=False,
             parent=self,

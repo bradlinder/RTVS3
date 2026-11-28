@@ -219,6 +219,9 @@ from transcript_editor import transcript_text_view_stylesheet
 from comment_widgets import CommentEditorDialog, NoteEditorDialog, CommentCardWidget, CommentsPanel
 from transcript_editor import TranscriptSelectionBubble, InteractiveTranscriptEdit
 
+def is_pdf_reading_available() -> bool:
+    ...
+
 def read_document_text(path: Path) -> str:
     ...
 from batch_dialog import BatchFileListWidget, BatchProcessingDialog

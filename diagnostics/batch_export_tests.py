@@ -290,6 +290,66 @@ class DiagnosticBatchExportTestsMixin:
             except (ImportError, AttributeError):
                 pass  # Headless test runner
 
+            # 3. Verify HTML document parsing & open_document_path workspace reset
+            import prs_shared
+            from media_batch import MediaBatchMixin
+            html_doc = d / "sample.html"
+            html_doc.write_text(
+                "<html><head><style>body{color:red}</style><script>var x=1;</script></head>"
+                "<body><p>First line.</p><div>Second line.</div><p>Third<br>line.</p></body></html>",
+                encoding="utf-8",
+            )
+            parsed_html = prs_shared.read_document_text(html_doc)
+            assert "color:red" not in parsed_html and "var x=1" not in parsed_html, f"Script/style leaked: {parsed_html!r}"
+            assert "First line." in parsed_html and "Second line." in parsed_html and "\n" in parsed_html, (
+                f"Expected preserved line breaks in HTML parse: {parsed_html!r}"
+            )
+
+            class _DocMockTimeline:
+                def __init__(self):
+                    self.peaks = [0.5]
+                    self.thumbs = ["t1"]
+                    self.stories = ["s1"]
+                    self.audio_name = "old.mp3"
+                    self.scroll_offset = 12.0
+                def set_duration(self, v): pass
+                def set_position(self, v): pass
+                def set_stories(self, v): self.stories = v
+                def set_waveform_peaks(self, v): self.peaks = v
+                def set_zoom(self, v): pass
+                def set_audio_filename(self, v): self.audio_name = v
+                def set_video_thumbnails(self, v): self.thumbs = v
+
+            class _DocMockStatusBar:
+                def __init__(self): self.msg = ""
+                def showMessage(self, m): self.msg = m
+
+            class _DocMockWindow(MediaBatchMixin):
+                def __init__(self):
+                    self.batch_active = False
+                    self.audio_file = Path("old.mp3")
+                    self.project_file = Path("old.rtvs")
+                    self.duration = 42.0
+                    self.current_media_is_video = True
+                    self.transcript = {"text": "old", "segments": []}
+                    self.stories = ["old_story"]
+                    self.project_dirty = False
+                    self.timeline = _DocMockTimeline()
+                    self._sb = _DocMockStatusBar()
+                def prepare_for_new_media(self): return True
+                def update_translation_language_selector(self): pass
+                def render_transcript(self): pass
+                def update_processing_menu_status(self): pass
+                def set_tools_actions_enabled(self, v): pass
+                def statusBar(self): return self._sb
+
+            doc_win = _DocMockWindow()
+            assert doc_win.open_document_path(html_doc) is True
+            assert doc_win.audio_file is None and doc_win.current_media_is_video is False
+            assert doc_win.duration == 0.0 and doc_win.stories == []
+            assert doc_win.timeline.peaks == [] and doc_win.timeline.thumbs == []
+            assert len(doc_win.transcript["segments"]) >= 3
+
             item.status = "PASS"
             item.message = "Batch and timeline drag-and-drop ingestion, URI decoding, and event filters verified"
         finally:

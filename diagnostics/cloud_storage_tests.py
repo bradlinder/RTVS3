@@ -356,7 +356,24 @@ class DiagnosticCloudStorageTestsMixin:
             if not (cache_peaks / "audio.peaks").exists():
                 raise AssertionError("Waveform peak file was unexpectedly deleted during thumbnails-only purge")
 
-            # 4. Test cooperative cancellation & background CacheScanWorker / CachePurgeWorker
+            # 4. Test cooperative cancellation, temp scratch matching, UNC skip & background workers
+            from cache_manager import _is_temp_audio_workfile
+            for hit in ("prs_tmp_a.wav", "rtvs_tmp_b.wav", "prs_extract_c.wav", "rtvs_diarization_d.wav", "rtvs_translate_e", "rtvs_wp_f"):
+                if not _is_temp_audio_workfile(hit):
+                    raise AssertionError(f"_is_temp_audio_workfile missed {hit}")
+            for miss in ("notes.txt", "show.wav", "prs_tmp_a.mp3"):
+                if _is_temp_audio_workfile(miss):
+                    raise AssertionError(f"_is_temp_audio_workfile false positive on {miss}")
+
+            t_unc0 = time.monotonic()
+            unc_stats = get_cache_disk_usage(
+                project_dirs=[r"\\nonexistent-smb-host-rtvs\share\ep.rtvs"],
+                include_global_caches=False,
+                include_settings_dirs=False,
+            )
+            if (time.monotonic() - t_unc0) >= 1.0 or unc_stats["total_files"] != 0:
+                raise AssertionError(f"UNC path was not skipped immediately: {unc_stats}")
+
             cancelled_stats = get_cache_disk_usage(
                 project_dirs=[proj_dir],
                 include_global_caches=False,

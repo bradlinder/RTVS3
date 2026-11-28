@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-28 15:18:22",
+  "generated_at": "2026-11-28 15:30:50",
   "total_files": 211,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 684,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.38-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.10.39-beta",
       "exports": null,
       "classes": [
         {
@@ -1141,7 +1141,7 @@
     },
     "cache_manager.py": {
       "path": "cache_manager.py",
-      "lines": 927,
+      "lines": 949,
       "summary": "Radio & TV Segmenter \u2014 Cache management, disk usage scanning, and purging utilities.",
       "exports": null,
       "classes": [
@@ -1150,127 +1150,127 @@
           "bases": [
             "QDialog"
           ],
-          "start_line": 622,
-          "end_line": 927,
+          "start_line": 650,
+          "end_line": 949,
           "doc": "Dialog for inspecting disk cache sizes and clearing temporary data.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent, language, project_dirs, auto_refresh, include_global_caches, include_settings_dirs)",
-              "start_line": 625,
-              "end_line": 650,
+              "start_line": 653,
+              "end_line": 678,
               "doc": ""
             },
             {
               "name": "_init_ui",
               "sig": "_init_ui(self)",
-              "start_line": 652,
-              "end_line": 742,
+              "start_line": 680,
+              "end_line": 770,
               "doc": ""
             },
             {
               "name": "_build_scan_dirs",
               "sig": "_build_scan_dirs(self)",
-              "start_line": 744,
-              "end_line": 748,
+              "start_line": 772,
+              "end_line": 776,
               "doc": ""
             },
             {
               "name": "_set_busy_state",
               "sig": "_set_busy_state(self, busy, status_text, is_error)",
-              "start_line": 750,
-              "end_line": 763,
+              "start_line": 778,
+              "end_line": 791,
               "doc": ""
             },
             {
               "name": "_apply_stats",
               "sig": "_apply_stats(self, stats)",
-              "start_line": 765,
-              "end_line": 788,
+              "start_line": 793,
+              "end_line": 816,
               "doc": ""
             },
             {
               "name": "_start_worker",
               "sig": "_start_worker(self, worker)",
-              "start_line": 790,
-              "end_line": 800,
+              "start_line": 818,
+              "end_line": 826,
               "doc": ""
             },
             {
               "name": "refresh_stats",
               "sig": "refresh_stats(self)",
-              "start_line": 802,
-              "end_line": 827,
+              "start_line": 828,
+              "end_line": 851,
               "doc": ""
             },
             {
               "name": "_on_scan_finished",
               "sig": "_on_scan_finished(self, stats, gen)",
-              "start_line": 829,
-              "end_line": 834,
+              "start_line": 853,
+              "end_line": 858,
               "doc": ""
             },
             {
               "name": "_on_purge_finished",
               "sig": "_on_purge_finished(self, files_deleted, bytes_freed, stats, gen)",
-              "start_line": 836,
-              "end_line": 847,
+              "start_line": 860,
+              "end_line": 871,
               "doc": ""
             },
             {
               "name": "_on_worker_error",
               "sig": "_on_worker_error(self, error_msg, gen)",
-              "start_line": 849,
-              "end_line": 854,
+              "start_line": 873,
+              "end_line": 878,
               "doc": ""
             },
             {
               "name": "_cleanup_workers",
               "sig": "_cleanup_workers(self)",
-              "start_line": 856,
-              "end_line": 867,
+              "start_line": 880,
+              "end_line": 890,
               "doc": ""
             },
             {
               "name": "accept",
               "sig": "accept(self)",
-              "start_line": 869,
-              "end_line": 871,
+              "start_line": 892,
+              "end_line": 894,
               "doc": ""
             },
             {
               "name": "reject",
               "sig": "reject(self)",
-              "start_line": 873,
-              "end_line": 875,
+              "start_line": 896,
+              "end_line": 898,
               "doc": ""
             },
             {
               "name": "closeEvent",
               "sig": "closeEvent(self, event)",
-              "start_line": 877,
-              "end_line": 879,
+              "start_line": 900,
+              "end_line": 902,
               "doc": ""
             },
             {
               "name": "_on_clear_all",
               "sig": "_on_clear_all(self)",
-              "start_line": 881,
-              "end_line": 885,
+              "start_line": 904,
+              "end_line": 908,
               "doc": ""
             },
             {
               "name": "_on_clear_selected",
               "sig": "_on_clear_selected(self)",
-              "start_line": 887,
-              "end_line": 898,
+              "start_line": 910,
+              "end_line": 921,
               "doc": ""
             },
             {
               "name": "_do_purge",
               "sig": "_do_purge(self, clear_thumbs, clear_waves, clear_audio)",
-              "start_line": 900,
-              "end_line": 927,
+              "start_line": 923,
+              "end_line": 949,
               "doc": ""
             }
           ]
@@ -1280,50 +1280,85 @@
         {
           "name": "register_active_thumbnail_dir",
           "sig": "register_active_thumbnail_dir(path)",
-          "start_line": 45,
-          "end_line": 54,
+          "start_line": 50,
+          "end_line": 59,
           "doc": "Register an active thumbnail directory so cache cleanup routines will never touch it."
         },
         {
           "name": "unregister_active_thumbnail_dir",
           "sig": "unregister_active_thumbnail_dir(path)",
-          "start_line": 57,
-          "end_line": 66,
+          "start_line": 62,
+          "end_line": 71,
           "doc": "Unregister an active thumbnail directory when the project or session closes."
         },
         {
           "name": "get_active_thumbnail_dirs",
           "sig": "get_active_thumbnail_dirs()",
-          "start_line": 69,
-          "end_line": 72,
+          "start_line": 74,
+          "end_line": 77,
           "doc": "Return a copy of currently registered active thumbnail directories."
         },
         {
           "name": "cleanup_old_thumbnail_cache",
           "sig": "cleanup_old_thumbnail_cache(max_age_hours, active_dir, exclude_dirs, blocking, base_dir)",
-          "start_line": 76,
-          "end_line": 204,
+          "start_line": 81,
+          "end_line": 209,
           "doc": "Purge temporary thumbnail directories older than max_age_hours in a background thread."
+        },
+        {
+          "name": "_is_temp_audio_workfile",
+          "sig": "_is_temp_audio_workfile(name)",
+          "start_line": 220,
+          "end_line": 225,
+          "doc": "Return True if *name* matches any temporary audio/translation/wp scratch file pattern."
+        },
+        {
+          "name": "_is_network_path",
+          "sig": "_is_network_path(path)",
+          "start_line": 228,
+          "end_line": 252,
+          "doc": "Return True if *path* points to a UNC share or mapped network drive."
+        },
+        {
+          "name": "_norm_dedup_key",
+          "sig": "_norm_dedup_key(path_str)",
+          "start_line": 255,
+          "end_line": 256,
+          "doc": ""
+        },
+        {
+          "name": "_resolve_local_search_dirs",
+          "sig": "_resolve_local_search_dirs(raw_dirs, skip_network, cancel_check)",
+          "start_line": 259,
+          "end_line": 291,
+          "doc": "Deduplicate and resolve candidate project directories without touching network shares."
+        },
+        {
+          "name": "_walk_cache_tree",
+          "sig": "_walk_cache_tree(root_dir, suffix, recursive, seen, delete, remove_root, cancel_check)",
+          "start_line": 294,
+          "end_line": 347,
+          "doc": "Iterative os.scandir() walker that counts or deletes matching files, returning (count, bytes)."
         },
         {
           "name": "collect_settings_project_dirs",
           "sig": "collect_settings_project_dirs()",
-          "start_line": 207,
-          "end_line": 229,
+          "start_line": 350,
+          "end_line": 372,
           "doc": "Collect candidate project directories from QSettings on the GUI thread."
         },
         {
           "name": "get_cache_disk_usage",
-          "sig": "get_cache_disk_usage(project_dirs, include_global_caches, include_settings_dirs, cancel_check)",
-          "start_line": 232,
-          "end_line": 445,
+          "sig": "get_cache_disk_usage(project_dirs, include_global_caches, include_settings_dirs, cancel_check, skip_network_dirs)",
+          "start_line": 375,
+          "end_line": 532,
           "doc": "Scan and compute disk usage for all temporary cache stores across appdata, temp dirs, and project folders."
         },
         {
           "name": "purge_caches",
-          "sig": "purge_caches(clear_thumbnails, clear_waveforms, clear_audio_extracts, project_dirs, include_global_caches, cancel_check)",
-          "start_line": 448,
-          "end_line": 619,
+          "sig": "purge_caches(clear_thumbnails, clear_waveforms, clear_audio_extracts, project_dirs, include_global_caches, cancel_check, skip_network_dirs)",
+          "start_line": 535,
+          "end_line": 647,
           "doc": "Purge requested cache stores safely from disk."
         }
       ]
@@ -2326,7 +2361,7 @@
     },
     "diagnostics/batch_export_tests.py": {
       "path": "diagnostics/batch_export_tests.py",
-      "lines": 465,
+      "lines": 525,
       "summary": "Batch processing, drag-and-drop ingestion, PDF, and DAW export structure tests.",
       "exports": null,
       "classes": [
@@ -2334,7 +2369,7 @@
           "name": "DiagnosticBatchExportTestsMixin",
           "bases": [],
           "start_line": 15,
-          "end_line": 465,
+          "end_line": 525,
           "doc": "",
           "methods": [
             {
@@ -2348,28 +2383,28 @@
               "name": "_test_batch_drag_and_drop_ingestion_and_event_handling",
               "sig": "_test_batch_drag_and_drop_ingestion_and_event_handling(self, item)",
               "start_line": 186,
-              "end_line": 296,
+              "end_line": 356,
               "doc": ""
             },
             {
               "name": "_test_unified_export_destinations_and_youtube_auth_integrity",
               "sig": "_test_unified_export_destinations_and_youtube_auth_integrity(self, item)",
-              "start_line": 298,
-              "end_line": 365,
+              "start_line": 358,
+              "end_line": 425,
               "doc": ""
             },
             {
               "name": "_test_pdf_transcript_export_and_bold_speaker_labels",
               "sig": "_test_pdf_transcript_export_and_bold_speaker_labels(self, item)",
-              "start_line": 367,
-              "end_line": 422,
+              "start_line": 427,
+              "end_line": 482,
               "doc": ""
             },
             {
               "name": "_test_exporter_structure_invariant_tests",
               "sig": "_test_exporter_structure_invariant_tests(self, item)",
-              "start_line": 424,
-              "end_line": 465,
+              "start_line": 484,
+              "end_line": 525,
               "doc": ""
             }
           ]
@@ -2379,7 +2414,7 @@
     },
     "diagnostics/cloud_storage_tests.py": {
       "path": "diagnostics/cloud_storage_tests.py",
-      "lines": 683,
+      "lines": 700,
       "summary": "Plugin interface, project persistence, cache management, YouTube & backup diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2387,7 +2422,7 @@
           "name": "DiagnosticCloudStorageTestsMixin",
           "bases": [],
           "start_line": 15,
-          "end_line": 683,
+          "end_line": 700,
           "doc": "",
           "methods": [
             {
@@ -2408,21 +2443,21 @@
               "name": "_test_temporary_cache_management_and_storage_inspection",
               "sig": "_test_temporary_cache_management_and_storage_inspection(self, item)",
               "start_line": 307,
-              "end_line": 493,
+              "end_line": 510,
               "doc": "Validates cache usage stats calculation, preview categorization, and cache purging."
             },
             {
               "name": "_test_youtube_data_api_and_direct_video_upload_engine",
               "sig": "_test_youtube_data_api_and_direct_video_upload_engine(self, item)",
-              "start_line": 495,
-              "end_line": 570,
+              "start_line": 512,
+              "end_line": 587,
               "doc": "Validates YouTube Zero-Auth manual export packaging (MP4, thumbnail, SRT, metadata .txt with chapters & speakers)."
             },
             {
               "name": "_test_comprehensive_local_and_cloud_backup_and_restore_engine",
               "sig": "_test_comprehensive_local_and_cloud_backup_and_restore_engine(self, item)",
-              "start_line": 572,
-              "end_line": 683,
+              "start_line": 589,
+              "end_line": 700,
               "doc": "Validates state serialization, SHA-256 verification, local backup roundtrip, and cloud payload integrity."
             }
           ]
@@ -4895,7 +4930,7 @@
     },
     "installer/build_tools/config.py": {
       "path": "installer/build_tools/config.py",
-      "lines": 222,
+      "lines": 223,
       "summary": "Build configuration constants and CLI argument parser.",
       "exports": null,
       "classes": [],
@@ -4903,8 +4938,8 @@
         {
           "name": "parse_build_args",
           "sig": "parse_build_args()",
-          "start_line": 147,
-          "end_line": 222,
+          "start_line": 148,
+          "end_line": 223,
           "doc": "Parse build target, plugin selection, installer, and version CLI flags."
         }
       ]
@@ -5007,7 +5042,7 @@
     },
     "media_batch.py": {
       "path": "media_batch.py",
-      "lines": 1865,
+      "lines": 1890,
       "summary": "Radio & TV Segmenter v1.1.1 \u2014 media batch responsibilities.",
       "exports": null,
       "classes": [
@@ -5015,7 +5050,7 @@
           "name": "MediaBatchMixin",
           "bases": [],
           "start_line": 25,
-          "end_line": 1865,
+          "end_line": 1890,
           "doc": "",
           "methods": [
             {
@@ -5253,182 +5288,182 @@
               "name": "open_document_path",
               "sig": "open_document_path(self, path)",
               "start_line": 1085,
-              "end_line": 1120,
+              "end_line": 1174,
               "doc": ""
             },
             {
               "name": "open_clear_cache_dialog",
               "sig": "open_clear_cache_dialog(self)",
-              "start_line": 1122,
-              "end_line": 1135,
+              "start_line": 1176,
+              "end_line": 1189,
               "doc": ""
             },
             {
               "name": "open_manage_cached_media_dialog",
               "sig": "open_manage_cached_media_dialog(self)",
-              "start_line": 1137,
-              "end_line": 1140,
+              "start_line": 1191,
+              "end_line": 1194,
               "doc": ""
             },
             {
               "name": "redownload_current_project_remote_media",
               "sig": "redownload_current_project_remote_media(self)",
-              "start_line": 1142,
-              "end_line": 1153,
+              "start_line": 1196,
+              "end_line": 1207,
               "doc": ""
             },
             {
               "name": "open_glossary_dialog",
               "sig": "open_glossary_dialog(self)",
-              "start_line": 1155,
-              "end_line": 1159,
+              "start_line": 1209,
+              "end_line": 1213,
               "doc": "Edit persistent terminology used by every ASR and translation backend."
             },
             {
               "name": "_save_glossary",
               "sig": "_save_glossary(self)",
-              "start_line": 1161,
-              "end_line": 1168,
+              "start_line": 1215,
+              "end_line": 1222,
               "doc": ""
             },
             {
               "name": "apply_glossary_to_current_transcript",
               "sig": "apply_glossary_to_current_transcript(self, entries)",
-              "start_line": 1170,
-              "end_line": 1202,
+              "start_line": 1224,
+              "end_line": 1256,
               "doc": "Apply glossary rules and contextual name resolution to the active transcript with Undo support."
             },
             {
               "name": "add_to_glossary",
               "sig": "add_to_glossary(self, text)",
-              "start_line": 1204,
-              "end_line": 1224,
+              "start_line": 1258,
+              "end_line": 1278,
               "doc": ""
             },
             {
               "name": "prompt_add_alternate_spelling",
               "sig": "prompt_add_alternate_spelling(self, alternate_text)",
-              "start_line": 1226,
-              "end_line": 1269,
+              "start_line": 1280,
+              "end_line": 1323,
               "doc": "Prompt user for the preferred glossary spelling that `alternate_text` should map to."
             },
             {
               "name": "apply_glossary_to_whisper_context",
               "sig": "apply_glossary_to_whisper_context(self)",
-              "start_line": 1271,
-              "end_line": 1282,
+              "start_line": 1325,
+              "end_line": 1336,
               "doc": ""
             },
             {
               "name": "add_custom_speaker_to_glossary",
               "sig": "add_custom_speaker_to_glossary(self, name)",
-              "start_line": 1284,
-              "end_line": 1286,
+              "start_line": 1338,
+              "end_line": 1340,
               "doc": ""
             },
             {
               "name": "set_language",
               "sig": "set_language(self, language, persist)",
-              "start_line": 1288,
-              "end_line": 1309,
+              "start_line": 1342,
+              "end_line": 1363,
               "doc": ""
             },
             {
               "name": "_apply_localization",
               "sig": "_apply_localization(self)",
-              "start_line": 1311,
-              "end_line": 1348,
+              "start_line": 1365,
+              "end_line": 1402,
               "doc": ""
             },
             {
               "name": "update_story_segment_terminology",
               "sig": "update_story_segment_terminology(self)",
-              "start_line": 1350,
-              "end_line": 1437,
+              "start_line": 1404,
+              "end_line": 1491,
               "doc": "Update all user-facing labels and tooltips using active vocabulary settings."
             },
             {
               "name": "open_document",
               "sig": "open_document(self)",
-              "start_line": 1439,
-              "end_line": 1493,
+              "start_line": 1493,
+              "end_line": 1518,
               "doc": ""
             },
             {
               "name": "export_text_file",
               "sig": "export_text_file(self)",
-              "start_line": 1495,
-              "end_line": 1503,
+              "start_line": 1520,
+              "end_line": 1528,
               "doc": ""
             },
             {
               "name": "open_media",
               "sig": "open_media(self)",
-              "start_line": 1505,
-              "end_line": 1514,
+              "start_line": 1530,
+              "end_line": 1539,
               "doc": ""
             },
             {
               "name": "prepare_for_new_media",
               "sig": "prepare_for_new_media(self)",
-              "start_line": 1516,
-              "end_line": 1549,
+              "start_line": 1541,
+              "end_line": 1574,
               "doc": "Checks for unsaved changes before loading new media."
             },
             {
               "name": "_batch_media_error",
               "sig": "_batch_media_error(self, message)",
-              "start_line": 1551,
-              "end_line": 1573,
+              "start_line": 1576,
+              "end_line": 1598,
               "doc": ""
             },
             {
               "name": "_get_batch_project_target_path",
               "sig": "_get_batch_project_target_path(self, base_name)",
-              "start_line": 1575,
-              "end_line": 1602,
+              "start_line": 1600,
+              "end_line": 1627,
               "doc": "Determines consistent target .rtvs project file path during batch processing."
             },
             {
               "name": "_batch_save_project_file",
               "sig": "_batch_save_project_file(self)",
-              "start_line": 1604,
-              "end_line": 1619,
+              "start_line": 1629,
+              "end_line": 1644,
               "doc": "Saves project .rtvs to dedicated directory structure during batch processing."
             },
             {
               "name": "_batch_export_current",
               "sig": "_batch_export_current(self)",
-              "start_line": 1621,
-              "end_line": 1705,
+              "start_line": 1646,
+              "end_line": 1730,
               "doc": "Handles automatic export or project saving during batch processing."
             },
             {
               "name": "load_media_file",
               "sig": "load_media_file(self, filename, source, restore_adjacent_project)",
-              "start_line": 1707,
-              "end_line": 1824,
+              "start_line": 1732,
+              "end_line": 1849,
               "doc": ""
             },
             {
               "name": "update_active_media_source",
               "sig": "update_active_media_source(self)",
-              "start_line": 1826,
-              "end_line": 1859,
+              "start_line": 1851,
+              "end_line": 1884,
               "doc": "Update media player source and refresh waveform when normalization state changes."
             },
             {
               "name": "open_audio",
               "sig": "open_audio(self)",
-              "start_line": 1861,
-              "end_line": 1862,
+              "start_line": 1886,
+              "end_line": 1887,
               "doc": ""
             },
             {
               "name": "handle_media_drop",
               "sig": "handle_media_drop(self, filename)",
-              "start_line": 1864,
-              "end_line": 1865,
+              "start_line": 1889,
+              "end_line": 1890,
               "doc": ""
             }
           ]
@@ -11849,7 +11884,7 @@
     },
     "prs_shared.py": {
       "path": "prs_shared.py",
-      "lines": 1495,
+      "lines": 1538,
       "summary": "",
       "exports": null,
       "classes": [
@@ -12298,17 +12333,24 @@
           "doc": "Return a QIcon containing visual render of the specified audio fade curve."
         },
         {
+          "name": "is_pdf_reading_available",
+          "sig": "is_pdf_reading_available()",
+          "start_line": 1318,
+          "end_line": 1328,
+          "doc": "Return True if at least one supported PDF extraction package is importable."
+        },
+        {
           "name": "read_document_text",
           "sig": "read_document_text(path)",
-          "start_line": 1318,
-          "end_line": 1384,
+          "start_line": 1331,
+          "end_line": 1427,
           "doc": ""
         },
         {
           "name": "__getattr__",
           "sig": "__getattr__(name)",
-          "start_line": 1471,
-          "end_line": 1488,
+          "start_line": 1514,
+          "end_line": 1531,
           "doc": "Lazy resolver for extracted UI and worker components to eliminate circular import chains."
         }
       ]
@@ -20629,7 +20671,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 856,
-      "summary": "Radio & TV Segmenter v3.10.38-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.39-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

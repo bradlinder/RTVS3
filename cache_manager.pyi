@@ -5,6 +5,7 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 import json
 import os
 import shutil
+import sys
 import tempfile
 import threading
 import time
@@ -24,13 +25,28 @@ def get_active_thumbnail_dirs() -> set[str]:
 def cleanup_old_thumbnail_cache(max_age_hours: int=..., active_dir: Path | str | None=..., exclude_dirs: list | set | None=..., blocking: bool=..., base_dir: Path | str | None=...) -> threading.Thread | None:
     ...
 
+def _is_temp_audio_workfile(name: str) -> bool:
+    ...
+
+def _is_network_path(path: Path | str | None) -> bool:
+    ...
+
+def _norm_dedup_key(path_str: str) -> str:
+    ...
+
+def _resolve_local_search_dirs(raw_dirs, skip_network: bool=..., cancel_check=...) -> list[Path]:
+    ...
+
+def _walk_cache_tree(root_dir: Path, suffix: str | None=..., recursive: bool=..., seen: set[str] | None=..., delete: bool=..., remove_root: bool=..., cancel_check=...) -> tuple[int, int]:
+    ...
+
 def collect_settings_project_dirs() -> list:
     ...
 
-def get_cache_disk_usage(project_dirs=..., include_global_caches: bool=..., include_settings_dirs: bool=..., cancel_check=...) -> dict:
+def get_cache_disk_usage(project_dirs=..., include_global_caches: bool=..., include_settings_dirs: bool=..., cancel_check=..., skip_network_dirs: bool=...) -> dict:
     ...
 
-def purge_caches(clear_thumbnails=..., clear_waveforms=..., clear_audio_extracts=..., project_dirs=..., include_global_caches: bool=..., cancel_check=...) -> tuple[int, int]:
+def purge_caches(clear_thumbnails=..., clear_waveforms=..., clear_audio_extracts=..., project_dirs=..., include_global_caches: bool=..., cancel_check=..., skip_network_dirs: bool=...) -> tuple[int, int]:
     ...
 
 class ClearCacheDialog(QDialog):

@@ -70,7 +70,7 @@ def _ensure_runtime_bin_on_path():
 _ensure_runtime_bin_on_path()
 
 # Re-exports from Phase 1 modularization (core_utils, transcript_cleaner, project_serialization, process_lifecycle)
-PROJECT_VERSION = "3.10.38-beta"
+PROJECT_VERSION = "3.10.39-beta"
 from core_utils import (
     INTERNAL_APP_ID,
     APP_DISPLAY_NAME,
@@ -1315,6 +1315,19 @@ from transcript_editor import (
 # Document Reading Utilities
 # ============================================================
 
+def is_pdf_reading_available() -> bool:
+    """Return True if at least one supported PDF extraction package is importable."""
+    import importlib.util
+
+    for pkg in ("pypdf", "PyPDF2", "pdfplumber"):
+        try:
+            if importlib.util.find_spec(pkg) is not None:
+                return True
+        except Exception:
+            pass
+    return False
+
+
 def read_document_text(path: Path) -> str:
     ext = path.suffix.lower()
 
@@ -1353,6 +1366,11 @@ def read_document_text(path: Path) -> str:
                                 text_pages.append(extracted)
                     return "\n".join(text_pages)
                 except ImportError:
+                    if getattr(sys, "frozen", False):
+                        raise RuntimeError(
+                            "PDF document import is not available in this installation. "
+                            "Please convert the PDF to .docx or .txt first."
+                        )
                     raise RuntimeError(
                         "PDF support requires 'pypdf'. Install it with:\npip install pypdf"
                     )
@@ -1364,15 +1382,40 @@ def read_document_text(path: Path) -> str:
             raw_html = path.read_text(encoding="utf-8-sig", errors="ignore")
 
         class HTMLTextParser(HTMLParser):
+            _SKIP_TAGS = {"script", "style", "noscript"}
+            _BLOCK_TAGS = {
+                "p", "div", "br", "li", "tr", "h1", "h2", "h3", "h4", "h5", "h6",
+                "section", "article", "blockquote", "pre",
+            }
+
             def __init__(self):
                 super().__init__()
                 self.pieces = []
+                self._skip_depth = 0
+
+            def handle_starttag(self, tag, attrs):
+                t = tag.lower()
+                if t in self._SKIP_TAGS:
+                    self._skip_depth += 1
+                elif self._skip_depth == 0 and t in self._BLOCK_TAGS:
+                    self.pieces.append("\n")
+
+            def handle_endtag(self, tag):
+                t = tag.lower()
+                if t in self._SKIP_TAGS:
+                    if self._skip_depth > 0:
+                        self._skip_depth -= 1
+                elif self._skip_depth == 0 and t in self._BLOCK_TAGS and t != "br":
+                    self.pieces.append("\n")
+
             def handle_data(self, data):
-                self.pieces.append(data)
+                if self._skip_depth == 0:
+                    self.pieces.append(data)
 
         parser = HTMLTextParser()
         parser.feed(raw_html)
-        return "".join(parser.pieces)
+        lines = [ln.strip() for ln in "".join(parser.pieces).splitlines()]
+        return "\n".join(ln for ln in lines if ln)
 
     else:
         try:

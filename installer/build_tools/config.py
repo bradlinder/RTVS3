@@ -92,6 +92,7 @@ HIDDEN_IMPORTS = [
     "project_serialization",
     "process_lifecycle",
     "cache_manager",
+    "cache_workers",
     "remote_media_cache",
     "remote_media_cache_dialog",
     "story_widgets",
