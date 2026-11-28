@@ -5,6 +5,7 @@ custom defaults saving, category reset wiring, and settings persistence.
 """
 
 import logging
+import os
 from typing import Optional
 from PySide6.QtCore import Qt, QSettings
 from PySide6.QtWidgets import (
@@ -43,11 +44,14 @@ class PreferencesDialogMixin(PreferencesResetMixin):
                 existing._select_category(initial_category)
             if existing.isMinimized():
                 existing.showNormal()
-            existing.raise_()
-            existing.activateWindow()
+            if not os.environ.get("RTVS_TEST_MODE"):
+                existing.raise_()
+                existing.activateWindow()
             return existing
 
         dialog = QDialog(self)
+        if os.environ.get("RTVS_TEST_MODE"):
+            dialog.setAttribute(Qt.WidgetAttribute.WA_DontShowOnScreen, True)
         dialog.setWindowTitle(f"Preferences — {APP_DISPLAY_NAME}")
         dialog.resize(740, 540)
         dialog.setMinimumSize(680, 460)
@@ -113,8 +117,9 @@ class PreferencesDialogMixin(PreferencesResetMixin):
             if was_visible:
                 dialog.show()
                 apply_window_titlebar_theme(dialog)
-                dialog.raise_()
-                dialog.activateWindow()
+                if not os.environ.get("RTVS_TEST_MODE"):
+                    dialog.raise_()
+                    dialog.activateWindow()
 
         float_btn.toggled.connect(toggle_float_mode)
         hdr_row.addWidget(float_btn)
@@ -906,6 +911,7 @@ class PreferencesDialogMixin(PreferencesResetMixin):
             return dialog
 
         dialog.show()
-        dialog.raise_()
-        dialog.activateWindow()
+        if not os.environ.get("RTVS_TEST_MODE"):
+            dialog.raise_()
+            dialog.activateWindow()
         return dialog

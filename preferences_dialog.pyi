@@ -1,6 +1,7 @@
 # preferences_dialog.pyi — Typing and Interface Stub for preferences_dialog
 from __future__ import annotations
 import logging
+import os
 from typing import Optional
 from PySide6.QtCore import Qt, QSettings
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QListWidget, QListWidgetItem, QStackedWidget, QPushButton, QDialogButtonBox, QMessageBox, QLabel, QLineEdit, QWidget, QComboBox, QTableWidget, QScrollArea, QFrame

@@ -59,8 +59,12 @@ class DiagnosticExportWordPressMediaMixin:
         assert res_fb.get("id") == 77
 
         # 2. WordPressClient.upload_media(..., caption=..., alt_text=...) delegates to update_media_metadata
+        import base64
+        _VALID_1X1_PNG = base64.b64decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg=="
+        )
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tf:
-            tf.write(b"\x89PNG\r\n\x1a\n")
+            tf.write(_VALID_1X1_PNG)
             tmp_img = tf.name
 
         try:
@@ -259,11 +263,13 @@ class DiagnosticExportWordPressMediaMixin:
 
             assert isinstance(tab.wp_thumb_preview_label, ClickableThumbnailLabel)
             set_preview_pixmap(tab, tmp_img, source_description="Test Featured Image")
+            assert not tab.wp_thumb_preview_label.pixmap().isNull()
             assert tab.wp_thumb_preview_label.full_image_path() == tmp_img
             assert "full-size" in tab.wp_thumb_preview_label.toolTip().lower()
             lb_dlg = open_featured_image_preview(tab)
             assert isinstance(lb_dlg, FeaturedImageLightboxDialog)
             assert "Test Featured Image" in lb_dlg.header_label.text()
+            assert "1 x 1 px" in lb_dlg.header_label.text()
             lb_dlg.close()
             lb_dlg.deleteLater()
             clear_preview_pixmap(tab, "No Thumbnail")

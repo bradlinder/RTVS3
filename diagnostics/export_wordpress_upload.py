@@ -389,8 +389,12 @@ class DiagnosticExportWordPressUploadMixin:
                 self.logged.append(msg)
 
         # 1. Test execute_wordpress_upload with include_audio=False (Text & Image only)
+        import base64
+        _VALID_1X1_PNG = base64.b64decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg=="
+        )
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f_img:
-            f_img.write(b"\x89PNG\r\n\x1a\nfakeimage")
+            f_img.write(_VALID_1X1_PNG)
             img_path = f_img.name
 
         try:

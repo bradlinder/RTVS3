@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-28 14:24:50 | Total Files: 210
+> Generated: 2026-11-28 14:32:59 | Total Files: 210
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 686 | Radio & TV Segmenter — v3.10.35-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 686 | Radio & TV Segmenter — v3.10.36-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 474 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `parse_ebur128_summary()`, `probe_media_duration_seconds()`, `probe_media_loudness()` *(+2 more)* |
 | `audio_normalization_worker.py` | 89 | Background QThread worker for non-blocking EBU R128 loudn... | `AudioLoudnessProbeWorker` |
 | `background_workers.py` | 911 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `get_waveform_peak_cache_path()`, `read_waveform_peak_cache()` *(+2 more)* |
@@ -39,11 +39,11 @@
 | `diagnostics/cloud_storage_tests.py` | 604 | Plugin interface, project persistence, cache management, ... | `DiagnosticCloudStorageTestsMixin` |
 | `diagnostics/editing_workflow_tests.py` | 590 | Fades, translation routing, speaker dialog flow, story bo... | `DiagnosticEditingWorkflowTestsMixin` |
 | `diagnostics/editor_guides_and_daw_tests.py` | 500 | Find-replace, user guides viewer, and REAPER DAW companio... | `DiagnosticEditorGuidesAndDawTestsMixin` |
-| `diagnostics/editor_story_ui_tests.py` | 882 | Story transcript highlighting, smart copy, duration & hea... | `DiagnosticEditorStoryUiTestsMixin` |
+| `diagnostics/editor_story_ui_tests.py` | 884 | Story transcript highlighting, smart copy, duration & hea... | `DiagnosticEditorStoryUiTestsMixin` |
 | `diagnostics/export_pipeline.py` | 485 | Multi-format export pipeline, scope slicing, and audio ca... | `DiagnosticExportPipelineMixin` |
 | `diagnostics/export_wordpress_core.py` | 830 | WordPress export scope, content formatting, and YouTube e... | `DiagnosticExportWordPressCoreMixin` |
-| `diagnostics/export_wordpress_media.py` | 752 | WordPress featured image metadata and Castos podcast diag... | `DiagnosticExportWordPressMediaMixin` |
-| `diagnostics/export_wordpress_upload.py` | 668 | WordPress multi-story upload, Gutenberg hygiene, and audi... | `DiagnosticExportWordPressUploadMixin` |
+| `diagnostics/export_wordpress_media.py` | 758 | WordPress featured image metadata and Castos podcast diag... | `DiagnosticExportWordPressMediaMixin` |
+| `diagnostics/export_wordpress_upload.py` | 672 | WordPress multi-story upload, Gutenberg hygiene, and audi... | `DiagnosticExportWordPressUploadMixin` |
 | `diagnostics/system_runtime_tests.py` | 446 | System runtime, updater, theme, packaging, roadmap, and m... | `DiagnosticSystemRuntimeTestsMixin` |
 | `diagnostics/voice_and_media_tests.py` | 595 | Voice profile matching, waveform peak cache, and playback... | `DiagnosticVoiceAndMediaTestsMixin` |
 | `diagnostics/youtube_import_cache_tests.py` | 365 | Diagnostic tests for YouTube Episode Import, yt-dlp runne... | `DiagnosticYouTubeImportCacheTestsMixin` |
@@ -100,12 +100,12 @@
 | `plugins/wordpress/episode_updater_ui.py` | 570 | Qt UI panels and dialog for WordPress existing episode lo... | `LoadWordPressEpisodeDialog`, `sync_wp_audio_checkbox_label()`, `load_episode_updater_from_post()`, `apply_fetched_post_to_tab()` *(+2 more)* |
 | `plugins/wordpress/export_destination.py` | 880 | WordPress Export Destination for UnifiedExportDialog. | `WordPressExportDestination`, `WordPressPostMetadataDialog` |
 | `plugins/wordpress/plugin.py` | 112 | WordPress Publisher Plugin for Radio & TV Segmenter. | `Plugin` |
-| `plugins/wordpress/pub_date_picker.py` | 338 | Non-focus-stealing click-to-drop-down calendar & time pic... | `_PublicationDatePickerPopup`, `PublicationDateLineEdit` |
+| `plugins/wordpress/pub_date_picker.py` | 341 | Non-focus-stealing click-to-drop-down calendar & time pic... | `_PublicationDatePickerPopup`, `PublicationDateLineEdit` |
 | `plugins/wordpress/wordpress_dialog.py` | 28 | Backward-compatible facade for legacy WordPress dialog im... | `generate_wp_excerpt()` |
 | `plugins/wordpress/wp_post_builder.py` | 456 | Post item builder, transcript slicing, and video frame ex... | `capture_video_frame()`, `get_primary_text_slice()`, `build_wp_post_items()`, `sync_featured_image_meta()` |
 | `plugins/wordpress/wp_publish_dialog.py` | 524 | WordPress single-story publish dialog with featured image... | `WordPressPublishDialog` |
 | `plugins/wordpress/wp_tab_widget.py` | 998 | WordPress export tab configuration widget and preview con... | `WordPressExportTabWidget` |
-| `plugins/wordpress/wp_thumb_ui.py` | 399 | UI presentation controller for WordPress Featured Image c... | `ClickableThumbnailLabel`, `FeaturedImageLightboxDialog`, `set_preview_pixmap()`, `clear_preview_pixmap()` *(+4 more)* |
+| `plugins/wordpress/wp_thumb_ui.py` | 405 | UI presentation controller for WordPress Featured Image c... | `ClickableThumbnailLabel`, `FeaturedImageLightboxDialog`, `set_preview_pixmap()`, `clear_preview_pixmap()` *(+4 more)* |
 | `plugins/wordpress/wp_thumbnail_defaults.py` | 445 | Headless YouTube-source featured image defaults, thumbnai... | `extract_youtube_id_headless()`, `get_youtube_thumbnail_cache_path()`, `get_youtube_source_info()`, `resolve_post_youtube_video_id()` *(+6 more)* |
 | `plugins/wordpress/wp_ui_builder.py` | 996 | UI layout construction and widget setup for WordPressExpo... | `setup_wp_tab_ui()`, `show_wp_excluded_placeholder()`, `hide_wp_excluded_placeholder()`, `include_excluded_item_in_export()` *(+1 more)* |
 | `plugins/wordpress/wp_workers.py` | 106 | Background QThread worker for publishing individual WordP... | `WordPressPublishWorker`, `YouTubeThumbnailFetchWorker` |
@@ -117,7 +117,7 @@
 | `plugins/youtube/yt_dlp_runner.py` | 871 | Headless yt-dlp runtime provisioner, URL parser, metadata... | `extract_youtube_id_strict()`, `normalize_quality_preset()`, `normalize_cookie_browser()`, `get_format_selector_for_preset()` *(+18 more)* |
 | `plugins/youtube/yt_import_dialog.py` | 796 | Qt Dialogs for importing existing YouTube videos, re-down... | `LoadYouTubeEpisodeDialog`, `populate_project_from_youtube_import()`, `open_yt_dlp_updater_dialog()`, `prompt_load_youtube_episode_dialog()` *(+1 more)* |
 | `plugins/youtube/yt_import_workers.py` | 250 | Background QThread workers for yt-dlp provisioning, YouTu... | `YtDlpInstallWorker`, `YouTubeProbeWorker`, `YouTubeDownloadWorker` |
-| `preferences_dialog.py` | 911 | Radio & TV Story Segmenter — Preferences Modal Dialog. | `PreferencesDialogMixin` |
+| `preferences_dialog.py` | 917 | Radio & TV Story Segmenter — Preferences Modal Dialog. | `PreferencesDialogMixin` |
 | `preferences_reset.py` | 684 | Radio & TV Story Segmenter — Preferences Reset & Factory ... | `RestoreSelectedSettingsDialog`, `PreferencesResetMixin` |
 | `preferences_reset_dialog.py` | 643 | Radio & TV Segmenter — Preferences reset and factory defa... | `RestoreSelectedSettingsDialog`, `PreferencesResetMixin` |
 | `preferences_tab_daw.py` | 138 | preferences_tab_daw.py — External Audio & Video Editors P... | `build_external_editors_tab()` |
@@ -192,7 +192,7 @@
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 856 | Radio & TV Segmenter v3.10.35-beta — transcript story res... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 856 | Radio & TV Segmenter v3.10.36-beta — transcript story res... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 655 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -221,7 +221,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (686 lines)
-*Radio & TV Segmenter — v3.10.35-beta*
+*Radio & TV Segmenter — v3.10.36-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–583):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -631,11 +631,11 @@
   - `_test_in_app_user_guides_and_documentation_viewer(self, item)` [L210-L301] — *Validates in-app user guide resolution, fallback to embedded content, and bundling invariants.*
   - `_test_reaper_daw_companion_and_universal_clipboard_pipeline(self, item)` [L303-L500] — *Validates REAPER DAW clip cue JSON schema, sidecar emission, Lua script syntax,*
 
-### `diagnostics/editor_story_ui_tests.py` (882 lines)
+### `diagnostics/editor_story_ui_tests.py` (884 lines)
 *Story transcript highlighting, smart copy, duration & header diagnostic tests.*
-- **class `DiagnosticEditorStoryUiTestsMixin`** (lines 10–882):
-  - `_test_story_transcript_highlighting_and_smart_copy(self, item)` [L11-L699] — *Validates story selection synchronization with transcript highlight overlay and smart clipboard copying.*
-  - `_test_story_duration_visibility_and_header_aggregation(self, item)` [L701-L882] — *Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation.*
+- **class `DiagnosticEditorStoryUiTestsMixin`** (lines 10–884):
+  - `_test_story_transcript_highlighting_and_smart_copy(self, item)` [L11-L701] — *Validates story selection synchronization with transcript highlight overlay and smart clipboard copying.*
+  - `_test_story_duration_visibility_and_header_aggregation(self, item)` [L703-L884] — *Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation.*
 
 ### `diagnostics/export_pipeline.py` (485 lines)
 *Multi-format export pipeline, scope slicing, and audio cancellation tests.*
@@ -655,18 +655,18 @@
   - `_test_wordpress_export_content_and_transcript_formatter(self, item)` [L280-L490]
   - `_test_wordpress_youtube_video_embed(self, item)` [L492-L830] — *Verify YouTube URL parsing, iframe block generation, video project defaults, and Gutenberg placement.*
 
-### `diagnostics/export_wordpress_media.py` (752 lines)
+### `diagnostics/export_wordpress_media.py` (758 lines)
 *WordPress featured image metadata and Castos podcast diagnostic tests.*
-- **class `DiagnosticExportWordPressMediaMixin`** (lines 10–752):
-  - `_test_wordpress_featured_image_caption_and_alt_text(self, item)` [L11-L334] — *Verify Featured Image caption & alt_text across WordPressClient, post builder, tab UI, and PublishWorker.*
-  - `_test_wordpress_castos_podcast_integration(self, item)` [L336-L752]
+- **class `DiagnosticExportWordPressMediaMixin`** (lines 10–758):
+  - `_test_wordpress_featured_image_caption_and_alt_text(self, item)` [L11-L340] — *Verify Featured Image caption & alt_text across WordPressClient, post builder, tab UI, and PublishWorker.*
+  - `_test_wordpress_castos_podcast_integration(self, item)` [L342-L758]
 
-### `diagnostics/export_wordpress_upload.py` (668 lines)
+### `diagnostics/export_wordpress_upload.py` (672 lines)
 *WordPress multi-story upload, Gutenberg hygiene, and audio toggle diagnostic tests.*
-- **class `DiagnosticExportWordPressUploadMixin`** (lines 11–668):
+- **class `DiagnosticExportWordPressUploadMixin`** (lines 11–672):
   - `_test_wordpress_multi_story_upload_and_ui_pluralization(self, item)` [L12-L300]
   - `_test_gutenberg_html_structural_hygiene_audit(self, item)` [L302-L338]
-  - `_test_wordpress_audio_inclusion_toggle_and_error_resilience(self, item)` [L340-L668]
+  - `_test_wordpress_audio_inclusion_toggle_and_error_resilience(self, item)` [L340-L672]
 
 ### `diagnostics/system_runtime_tests.py` (446 lines)
 *System runtime, updater, theme, packaging, roadmap, and modularity diagnostic tests.*
@@ -1624,38 +1624,38 @@
   - `open_publish_dialog(self, parent, story)` [L91-L93]
   - `open_post_metadata_dialog(self, parent, story)` [L95-L104]
 
-### `plugins/wordpress/pub_date_picker.py` (338 lines)
+### `plugins/wordpress/pub_date_picker.py` (341 lines)
 *Non-focus-stealing click-to-drop-down calendar & time picker for WordPress publication dates.*
 - **Public Exports (`__all__`)**: PublicationDateLineEdit
-- **class `_PublicationDatePickerPopup(QFrame)`** (lines 49–271):
+- **class `_PublicationDatePickerPopup(QFrame)`** (lines 50–274):
   *Frameless, non-focus-stealing calendar and 24-hour time dropdown for PublicationDateLineEdit.*
-  - `__init__(self, anchor, parent)` [L52-L109]
-  - `sync_from_text(self, raw_text)` [L111-L128] — *Align calendar and time widgets to `raw_text`, or today's date/time when blank.*
-  - `_apply_selected_datetime(self)` [L130-L141]
-  - `_on_date_clicked(self, qdate)` [L143-L150]
-  - `_on_date_activated(self, qdate)` [L152-L154]
-  - `_on_time_changed(self, *_args)` [L156-L158]
-  - `_on_now_clicked(self)` [L160-L168]
-  - `_on_clear_clicked(self)` [L170-L174]
-  - `_on_done_clicked(self)` [L176-L179]
-  - `_install_filters(self)` [L181-L191]
-  - `_remove_filters(self)` [L193-L208]
-  - `show_for_anchor(self)` [L210-L235] — *Position below (or above if needed) the anchor QLineEdit without stealing focus.*
-  - `hideEvent(self, event)` [L237-L239]
-  - `keyPressEvent(self, event)` [L241-L248]
-  - `eventFilter(self, obj, event)` [L250-L271]
-- **class `PublicationDateLineEdit(QLineEdit)`** (lines 274–335):
+  - `__init__(self, anchor, parent)` [L53-L110]
+  - `sync_from_text(self, raw_text)` [L112-L129] — *Align calendar and time widgets to `raw_text`, or today's date/time when blank.*
+  - `_apply_selected_datetime(self)` [L131-L142]
+  - `_on_date_clicked(self, qdate)` [L144-L151]
+  - `_on_date_activated(self, qdate)` [L153-L155]
+  - `_on_time_changed(self, *_args)` [L157-L159]
+  - `_on_now_clicked(self)` [L161-L169]
+  - `_on_clear_clicked(self)` [L171-L175]
+  - `_on_done_clicked(self)` [L177-L180]
+  - `_install_filters(self)` [L182-L192]
+  - `_remove_filters(self)` [L194-L209]
+  - `show_for_anchor(self)` [L211-L238] — *Position below (or above if needed) the anchor QLineEdit without stealing focus.*
+  - `hideEvent(self, event)` [L240-L242]
+  - `keyPressEvent(self, event)` [L244-L251]
+  - `eventFilter(self, obj, event)` [L253-L274]
+- **class `PublicationDateLineEdit(QLineEdit)`** (lines 277–338):
   *Editable QLineEdit that opens a non-intrusive calendar/time dropdown on click.*
-  - `__init__(self, parent)` [L277-L288]
-  - `_ensure_popup(self)` [L290-L293]
-  - `open_picker(self)` [L295-L301] — *Open the calendar/time dropdown anchored to this input without stealing focus.*
-  - `close_picker(self)` [L303-L306] — *Close the dropdown if currently open.*
-  - `_on_text_edited_sync_popup(self, text)` [L308-L310]
-  - `mousePressEvent(self, event)` [L312-L315]
-  - `keyPressEvent(self, event)` [L317-L335]
+  - `__init__(self, parent)` [L280-L291]
+  - `_ensure_popup(self)` [L293-L296]
+  - `open_picker(self)` [L298-L304] — *Open the calendar/time dropdown anchored to this input without stealing focus.*
+  - `close_picker(self)` [L306-L309] — *Close the dropdown if currently open.*
+  - `_on_text_edited_sync_popup(self, text)` [L311-L313]
+  - `mousePressEvent(self, event)` [L315-L318]
+  - `keyPressEvent(self, event)` [L320-L338]
 - **Functions**:
-  - `_is_qt_valid(obj)` [L22-L31] — *Return False when `obj` is None or its underlying C++ Qt object was deleted.*
-  - `_is_widget_or_descendant(candidate, ancestor)` [L34-L46] — *Return True if `candidate` is `ancestor` or nested beneath it in the widget tree.*
+  - `_is_qt_valid(obj)` [L23-L32] — *Return False when `obj` is None or its underlying C++ Qt object was deleted.*
+  - `_is_widget_or_descendant(candidate, ancestor)` [L35-L47] — *Return True if `candidate` is `ancestor` or nested beneath it in the widget tree.*
 
 ### `plugins/wordpress/wordpress_dialog.py` (28 lines)
 *Backward-compatible facade for legacy WordPress dialog imports.*
@@ -1754,7 +1754,7 @@
   - `_refresh_castos_feeds(self)` [L962-L979]
   - `_refresh_wp_metadata(self)` [L981-L997]
 
-### `plugins/wordpress/wp_thumb_ui.py` (399 lines)
+### `plugins/wordpress/wp_thumb_ui.py` (405 lines)
 *UI presentation controller for WordPress Featured Image controls and preview.*
 - **Public Exports (`__all__`)**: ClickableThumbnailLabel, FeaturedImageLightboxDialog, set_preview_pixmap, clear_preview_pixmap, open_featured_image_preview, load_featured_image_from_post, on_featured_image_mode_changed, on_youtube_thumbnail_fetched
 - **class `ClickableThumbnailLabel(QLabel)`** (lines 21–59):
@@ -1770,14 +1770,14 @@
   - `_update_scaled_pixmap(self)` [L117-L130]
   - `resizeEvent(self, event)` [L132-L134]
 - **Functions**:
-  - `set_preview_pixmap(tab_widget, image_path, source_description)` [L137-L150] — *Display scaled preview thumbnail and enable click-to-enlarge for *image_path*.*
-  - `clear_preview_pixmap(tab_widget, placeholder_text)` [L153-L161] — *Clear preview pixmap, disable click-to-enlarge, and show *placeholder_text*.*
-  - `open_featured_image_preview(tab_widget)` [L164-L174] — *Open the full-resolution lightbox preview for the current WordPress featured image.*
-  - `_set_preview_pixmap(tab_widget, image_path, source_description)` [L177-L178]
-  - `_start_youtube_thumbnail_fetch(tab_widget, video_id, thumbnail_url)` [L181-L203] — *Kick off a non-blocking background QThread fetch for a YouTube default thumbnail.*
-  - `on_youtube_thumbnail_fetched(tab_widget, video_id, local_path)` [L206-L235] — *Apply downloaded YouTube thumbnail preview on the Qt main thread if still relevant.*
-  - `load_featured_image_from_post(tab_widget, index, post)` [L238-L316] — *Populate Featured Image radio buttons, scrubber, and preview from a post dict.*
-  - `on_featured_image_mode_changed(tab_widget)` [L319-L387] — *Handle user selection of Featured Image radio buttons.*
+  - `set_preview_pixmap(tab_widget, image_path, source_description)` [L137-L156] — *Display scaled preview thumbnail and enable click-to-enlarge for *image_path*.*
+  - `clear_preview_pixmap(tab_widget, placeholder_text)` [L159-L167] — *Clear preview pixmap, disable click-to-enlarge, and show *placeholder_text*.*
+  - `open_featured_image_preview(tab_widget)` [L170-L180] — *Open the full-resolution lightbox preview for the current WordPress featured image.*
+  - `_set_preview_pixmap(tab_widget, image_path, source_description)` [L183-L184]
+  - `_start_youtube_thumbnail_fetch(tab_widget, video_id, thumbnail_url)` [L187-L209] — *Kick off a non-blocking background QThread fetch for a YouTube default thumbnail.*
+  - `on_youtube_thumbnail_fetched(tab_widget, video_id, local_path)` [L212-L241] — *Apply downloaded YouTube thumbnail preview on the Qt main thread if still relevant.*
+  - `load_featured_image_from_post(tab_widget, index, post)` [L244-L322] — *Populate Featured Image radio buttons, scrubber, and preview from a post dict.*
+  - `on_featured_image_mode_changed(tab_widget)` [L325-L393] — *Handle user selection of Featured Image radio buttons.*
 
 ### `plugins/wordpress/wp_thumbnail_defaults.py` (445 lines)
 *Headless YouTube-source featured image defaults, thumbnail caching, and embed inheritance.*
@@ -1987,11 +1987,11 @@
   - `_set_active_proc(self, proc)` [L150-L151]
   - `run(self)` [L153-L243]
 
-### `preferences_dialog.py` (911 lines)
+### `preferences_dialog.py` (917 lines)
 *Radio & TV Story Segmenter — Preferences Modal Dialog.*
-- **class `PreferencesDialogMixin(PreferencesResetMixin)`** (lines 32–911):
+- **class `PreferencesDialogMixin(PreferencesResetMixin)`** (lines 33–917):
   *Provides the main open_preferences_dialog method and settings persistence.*
-  - `open_preferences_dialog(self, initial_category, modal)` [L35-L911] — *Open the multi-category Preferences dialog as a non-modal floating inspector.*
+  - `open_preferences_dialog(self, initial_category, modal)` [L36-L917] — *Open the multi-category Preferences dialog as a non-modal floating inspector.*
 
 ### `preferences_reset.py` (684 lines)
 *Radio & TV Story Segmenter — Preferences Reset & Factory Defaults Engine.*
@@ -3575,7 +3575,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (856 lines)
-*Radio & TV Segmenter v3.10.35-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.10.36-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–855):
   - `render_transcript(self)` [L64-L471]

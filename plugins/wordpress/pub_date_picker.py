@@ -1,6 +1,7 @@
 """Non-focus-stealing click-to-drop-down calendar & time picker for WordPress publication dates."""
 from __future__ import annotations
 
+import os
 import weakref
 from datetime import datetime
 from typing import Any, Optional
@@ -232,6 +233,8 @@ class _PublicationDatePickerPopup(QFrame):
 
         self.move(x, y)
         self._install_filters()
+        if os.environ.get("RTVS_TEST_MODE"):
+            self.setAttribute(Qt.WidgetAttribute.WA_DontShowOnScreen, True)
         self.show()
 
     def hideEvent(self, event: Any) -> None:

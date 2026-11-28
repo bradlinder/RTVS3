@@ -139,13 +139,19 @@ def set_preview_pixmap(tab_widget: Any, image_path: str, source_description: str
     lbl = getattr(tab_widget, "wp_thumb_preview_label", None)
     if lbl is None:
         return
-    pix = QPixmap(str(image_path)).scaled(
-        160,
-        90,
-        Qt.AspectRatioMode.KeepAspectRatio,
-        Qt.TransformationMode.SmoothTransformation,
-    )
-    lbl.setPixmap(pix)
+    pix = QPixmap(str(image_path))
+    if pix.isNull():
+        lbl.clear()
+        lbl.setText("Preview unavailable")
+    else:
+        lbl.setPixmap(
+            pix.scaled(
+                160,
+                90,
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation,
+            )
+        )
     if hasattr(lbl, "set_full_image"):
         lbl.set_full_image(str(image_path), source_description=source_description)
 

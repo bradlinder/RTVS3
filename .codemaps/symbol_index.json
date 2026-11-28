@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-28 14:24:50",
+  "generated_at": "2026-11-28 14:32:59",
   "total_files": 210,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 686,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.35-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.10.36-beta",
       "exports": null,
       "classes": [
         {
@@ -2372,7 +2372,7 @@
     },
     "diagnostics/editor_story_ui_tests.py": {
       "path": "diagnostics/editor_story_ui_tests.py",
-      "lines": 882,
+      "lines": 884,
       "summary": "Story transcript highlighting, smart copy, duration & header diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2380,21 +2380,21 @@
           "name": "DiagnosticEditorStoryUiTestsMixin",
           "bases": [],
           "start_line": 10,
-          "end_line": 882,
+          "end_line": 884,
           "doc": "",
           "methods": [
             {
               "name": "_test_story_transcript_highlighting_and_smart_copy",
               "sig": "_test_story_transcript_highlighting_and_smart_copy(self, item)",
               "start_line": 11,
-              "end_line": 699,
+              "end_line": 701,
               "doc": "Validates story selection synchronization with transcript highlight overlay and smart clipboard copying."
             },
             {
               "name": "_test_story_duration_visibility_and_header_aggregation",
               "sig": "_test_story_duration_visibility_and_header_aggregation(self, item)",
-              "start_line": 701,
-              "end_line": 882,
+              "start_line": 703,
+              "end_line": 884,
               "doc": "Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation."
             }
           ]
@@ -2510,7 +2510,7 @@
     },
     "diagnostics/export_wordpress_media.py": {
       "path": "diagnostics/export_wordpress_media.py",
-      "lines": 752,
+      "lines": 758,
       "summary": "WordPress featured image metadata and Castos podcast diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2518,21 +2518,21 @@
           "name": "DiagnosticExportWordPressMediaMixin",
           "bases": [],
           "start_line": 10,
-          "end_line": 752,
+          "end_line": 758,
           "doc": "",
           "methods": [
             {
               "name": "_test_wordpress_featured_image_caption_and_alt_text",
               "sig": "_test_wordpress_featured_image_caption_and_alt_text(self, item)",
               "start_line": 11,
-              "end_line": 334,
+              "end_line": 340,
               "doc": "Verify Featured Image caption & alt_text across WordPressClient, post builder, tab UI, and PublishWorker."
             },
             {
               "name": "_test_wordpress_castos_podcast_integration",
               "sig": "_test_wordpress_castos_podcast_integration(self, item)",
-              "start_line": 336,
-              "end_line": 752,
+              "start_line": 342,
+              "end_line": 758,
               "doc": ""
             }
           ]
@@ -2542,7 +2542,7 @@
     },
     "diagnostics/export_wordpress_upload.py": {
       "path": "diagnostics/export_wordpress_upload.py",
-      "lines": 668,
+      "lines": 672,
       "summary": "WordPress multi-story upload, Gutenberg hygiene, and audio toggle diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2550,7 +2550,7 @@
           "name": "DiagnosticExportWordPressUploadMixin",
           "bases": [],
           "start_line": 11,
-          "end_line": 668,
+          "end_line": 672,
           "doc": "",
           "methods": [
             {
@@ -2571,7 +2571,7 @@
               "name": "_test_wordpress_audio_inclusion_toggle_and_error_resilience",
               "sig": "_test_wordpress_audio_inclusion_toggle_and_error_resilience(self, item)",
               "start_line": 340,
-              "end_line": 668,
+              "end_line": 672,
               "doc": ""
             }
           ]
@@ -8384,7 +8384,7 @@
     },
     "plugins/wordpress/pub_date_picker.py": {
       "path": "plugins/wordpress/pub_date_picker.py",
-      "lines": 338,
+      "lines": 341,
       "summary": "Non-focus-stealing click-to-drop-down calendar & time picker for WordPress publication dates.",
       "exports": [
         "PublicationDateLineEdit"
@@ -8395,113 +8395,113 @@
           "bases": [
             "QFrame"
           ],
-          "start_line": 49,
-          "end_line": 271,
+          "start_line": 50,
+          "end_line": 274,
           "doc": "Frameless, non-focus-stealing calendar and 24-hour time dropdown for PublicationDateLineEdit.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, anchor, parent)",
-              "start_line": 52,
-              "end_line": 109,
+              "start_line": 53,
+              "end_line": 110,
               "doc": ""
             },
             {
               "name": "sync_from_text",
               "sig": "sync_from_text(self, raw_text)",
-              "start_line": 111,
-              "end_line": 128,
+              "start_line": 112,
+              "end_line": 129,
               "doc": "Align calendar and time widgets to `raw_text`, or today's date/time when blank."
             },
             {
               "name": "_apply_selected_datetime",
               "sig": "_apply_selected_datetime(self)",
-              "start_line": 130,
-              "end_line": 141,
+              "start_line": 131,
+              "end_line": 142,
               "doc": ""
             },
             {
               "name": "_on_date_clicked",
               "sig": "_on_date_clicked(self, qdate)",
-              "start_line": 143,
-              "end_line": 150,
+              "start_line": 144,
+              "end_line": 151,
               "doc": ""
             },
             {
               "name": "_on_date_activated",
               "sig": "_on_date_activated(self, qdate)",
-              "start_line": 152,
-              "end_line": 154,
+              "start_line": 153,
+              "end_line": 155,
               "doc": ""
             },
             {
               "name": "_on_time_changed",
               "sig": "_on_time_changed(self, *_args)",
-              "start_line": 156,
-              "end_line": 158,
+              "start_line": 157,
+              "end_line": 159,
               "doc": ""
             },
             {
               "name": "_on_now_clicked",
               "sig": "_on_now_clicked(self)",
-              "start_line": 160,
-              "end_line": 168,
+              "start_line": 161,
+              "end_line": 169,
               "doc": ""
             },
             {
               "name": "_on_clear_clicked",
               "sig": "_on_clear_clicked(self)",
-              "start_line": 170,
-              "end_line": 174,
+              "start_line": 171,
+              "end_line": 175,
               "doc": ""
             },
             {
               "name": "_on_done_clicked",
               "sig": "_on_done_clicked(self)",
-              "start_line": 176,
-              "end_line": 179,
+              "start_line": 177,
+              "end_line": 180,
               "doc": ""
             },
             {
               "name": "_install_filters",
               "sig": "_install_filters(self)",
-              "start_line": 181,
-              "end_line": 191,
+              "start_line": 182,
+              "end_line": 192,
               "doc": ""
             },
             {
               "name": "_remove_filters",
               "sig": "_remove_filters(self)",
-              "start_line": 193,
-              "end_line": 208,
+              "start_line": 194,
+              "end_line": 209,
               "doc": ""
             },
             {
               "name": "show_for_anchor",
               "sig": "show_for_anchor(self)",
-              "start_line": 210,
-              "end_line": 235,
+              "start_line": 211,
+              "end_line": 238,
               "doc": "Position below (or above if needed) the anchor QLineEdit without stealing focus."
             },
             {
               "name": "hideEvent",
               "sig": "hideEvent(self, event)",
-              "start_line": 237,
-              "end_line": 239,
+              "start_line": 240,
+              "end_line": 242,
               "doc": ""
             },
             {
               "name": "keyPressEvent",
               "sig": "keyPressEvent(self, event)",
-              "start_line": 241,
-              "end_line": 248,
+              "start_line": 244,
+              "end_line": 251,
               "doc": ""
             },
             {
               "name": "eventFilter",
               "sig": "eventFilter(self, obj, event)",
-              "start_line": 250,
-              "end_line": 271,
+              "start_line": 253,
+              "end_line": 274,
               "doc": ""
             }
           ]
@@ -8511,57 +8511,57 @@
           "bases": [
             "QLineEdit"
           ],
-          "start_line": 274,
-          "end_line": 335,
+          "start_line": 277,
+          "end_line": 338,
           "doc": "Editable QLineEdit that opens a non-intrusive calendar/time dropdown on click.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent)",
-              "start_line": 277,
-              "end_line": 288,
+              "start_line": 280,
+              "end_line": 291,
               "doc": ""
             },
             {
               "name": "_ensure_popup",
               "sig": "_ensure_popup(self)",
-              "start_line": 290,
-              "end_line": 293,
+              "start_line": 293,
+              "end_line": 296,
               "doc": ""
             },
             {
               "name": "open_picker",
               "sig": "open_picker(self)",
-              "start_line": 295,
-              "end_line": 301,
+              "start_line": 298,
+              "end_line": 304,
               "doc": "Open the calendar/time dropdown anchored to this input without stealing focus."
             },
             {
               "name": "close_picker",
               "sig": "close_picker(self)",
-              "start_line": 303,
-              "end_line": 306,
+              "start_line": 306,
+              "end_line": 309,
               "doc": "Close the dropdown if currently open."
             },
             {
               "name": "_on_text_edited_sync_popup",
               "sig": "_on_text_edited_sync_popup(self, text)",
-              "start_line": 308,
-              "end_line": 310,
+              "start_line": 311,
+              "end_line": 313,
               "doc": ""
             },
             {
               "name": "mousePressEvent",
               "sig": "mousePressEvent(self, event)",
-              "start_line": 312,
-              "end_line": 315,
+              "start_line": 315,
+              "end_line": 318,
               "doc": ""
             },
             {
               "name": "keyPressEvent",
               "sig": "keyPressEvent(self, event)",
-              "start_line": 317,
-              "end_line": 335,
+              "start_line": 320,
+              "end_line": 338,
               "doc": ""
             }
           ]
@@ -8571,15 +8571,15 @@
         {
           "name": "_is_qt_valid",
           "sig": "_is_qt_valid(obj)",
-          "start_line": 22,
-          "end_line": 31,
+          "start_line": 23,
+          "end_line": 32,
           "doc": "Return False when `obj` is None or its underlying C++ Qt object was deleted."
         },
         {
           "name": "_is_widget_or_descendant",
           "sig": "_is_widget_or_descendant(candidate, ancestor)",
-          "start_line": 34,
-          "end_line": 46,
+          "start_line": 35,
+          "end_line": 47,
           "doc": "Return True if `candidate` is `ancestor` or nested beneath it in the widget tree."
         }
       ]
@@ -9190,7 +9190,7 @@
     },
     "plugins/wordpress/wp_thumb_ui.py": {
       "path": "plugins/wordpress/wp_thumb_ui.py",
-      "lines": 399,
+      "lines": 405,
       "summary": "UI presentation controller for WordPress Featured Image controls and preview.",
       "exports": [
         "ClickableThumbnailLabel",
@@ -9287,56 +9287,56 @@
           "name": "set_preview_pixmap",
           "sig": "set_preview_pixmap(tab_widget, image_path, source_description)",
           "start_line": 137,
-          "end_line": 150,
+          "end_line": 156,
           "doc": "Display scaled preview thumbnail and enable click-to-enlarge for *image_path*."
         },
         {
           "name": "clear_preview_pixmap",
           "sig": "clear_preview_pixmap(tab_widget, placeholder_text)",
-          "start_line": 153,
-          "end_line": 161,
+          "start_line": 159,
+          "end_line": 167,
           "doc": "Clear preview pixmap, disable click-to-enlarge, and show *placeholder_text*."
         },
         {
           "name": "open_featured_image_preview",
           "sig": "open_featured_image_preview(tab_widget)",
-          "start_line": 164,
-          "end_line": 174,
+          "start_line": 170,
+          "end_line": 180,
           "doc": "Open the full-resolution lightbox preview for the current WordPress featured image."
         },
         {
           "name": "_set_preview_pixmap",
           "sig": "_set_preview_pixmap(tab_widget, image_path, source_description)",
-          "start_line": 177,
-          "end_line": 178,
+          "start_line": 183,
+          "end_line": 184,
           "doc": ""
         },
         {
           "name": "_start_youtube_thumbnail_fetch",
           "sig": "_start_youtube_thumbnail_fetch(tab_widget, video_id, thumbnail_url)",
-          "start_line": 181,
-          "end_line": 203,
+          "start_line": 187,
+          "end_line": 209,
           "doc": "Kick off a non-blocking background QThread fetch for a YouTube default thumbnail."
         },
         {
           "name": "on_youtube_thumbnail_fetched",
           "sig": "on_youtube_thumbnail_fetched(tab_widget, video_id, local_path)",
-          "start_line": 206,
-          "end_line": 235,
+          "start_line": 212,
+          "end_line": 241,
           "doc": "Apply downloaded YouTube thumbnail preview on the Qt main thread if still relevant."
         },
         {
           "name": "load_featured_image_from_post",
           "sig": "load_featured_image_from_post(tab_widget, index, post)",
-          "start_line": 238,
-          "end_line": 316,
+          "start_line": 244,
+          "end_line": 322,
           "doc": "Populate Featured Image radio buttons, scrubber, and preview from a post dict."
         },
         {
           "name": "on_featured_image_mode_changed",
           "sig": "on_featured_image_mode_changed(tab_widget)",
-          "start_line": 319,
-          "end_line": 387,
+          "start_line": 325,
+          "end_line": 393,
           "doc": "Handle user selection of Featured Image radio buttons."
         }
       ]
@@ -10602,7 +10602,7 @@
     },
     "preferences_dialog.py": {
       "path": "preferences_dialog.py",
-      "lines": 911,
+      "lines": 917,
       "summary": "Radio & TV Story Segmenter \u2014 Preferences Modal Dialog.",
       "exports": null,
       "classes": [
@@ -10611,15 +10611,15 @@
           "bases": [
             "PreferencesResetMixin"
           ],
-          "start_line": 32,
-          "end_line": 911,
+          "start_line": 33,
+          "end_line": 917,
           "doc": "Provides the main open_preferences_dialog method and settings persistence.",
           "methods": [
             {
               "name": "open_preferences_dialog",
               "sig": "open_preferences_dialog(self, initial_category, modal)",
-              "start_line": 35,
-              "end_line": 911,
+              "start_line": 36,
+              "end_line": 917,
               "doc": "Open the multi-category Preferences dialog as a non-modal floating inspector."
             }
           ]
@@ -20428,7 +20428,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 856,
-      "summary": "Radio & TV Segmenter v3.10.35-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.36-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

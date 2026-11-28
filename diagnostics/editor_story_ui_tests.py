@@ -478,6 +478,8 @@ class DiagnosticEditorStoryUiTestsMixin:
                 os.environ["RTVS_TEST_MODE"] = _prev_rtvs_test_mode
             if app_inst is not None:
                 app_inst.removeEventFilter(flash_spy)
+        from PySide6.QtCore import Qt as _Qt
+        play_tab.setAttribute(_Qt.WidgetAttribute.WA_DontShowOnScreen, True)
         play_tab.resize(480, 520)
         play_tab.show()
         QApplication.processEvents()
