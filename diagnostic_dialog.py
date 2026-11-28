@@ -58,6 +58,9 @@ _GUI_SOURCE_MARKERS = (
 )
 
 
+_DETACHED_DIAGNOSTIC_THREADS: set = set()
+
+
 def create_diagnostic_dialog(parent=None, include_dev_tests: Optional[bool] = None):
     """Builds the Diagnostic Test Bench Qt Dialog."""
     from PySide6.QtCore import Qt, QThread, Signal, QObject
@@ -378,7 +381,14 @@ def create_diagnostic_dialog(parent=None, include_dev_tests: Optional[bool] = No
                             except RuntimeError:
                                 pass
                         self.worker_thread.quit()
-                        self.worker_thread.wait(2000)
+                        if not self.worker_thread.wait(2000):
+                            wt = self.worker_thread
+                            wk = self.worker
+                            wt.setParent(None)
+                            entry = (wt, wk)
+                            _DETACHED_DIAGNOSTIC_THREADS.add(entry)
+                            wt.finished.connect(lambda *_, e=entry: _DETACHED_DIAGNOSTIC_THREADS.discard(e))
+                            wt.finished.connect(wt.deleteLater)
             except Exception:
                 pass
             finally:
@@ -388,6 +398,10 @@ def create_diagnostic_dialog(parent=None, include_dev_tests: Optional[bool] = No
         def done(self, result):
             self._cleanup_worker_thread()
             super().done(result)
+
+        def reject(self):
+            self._cleanup_worker_thread()
+            super().reject()
 
         def closeEvent(self, event):
             self._cleanup_worker_thread()

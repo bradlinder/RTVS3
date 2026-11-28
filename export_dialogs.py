@@ -150,9 +150,12 @@ class ExportDialogsMixin:
             return dialog
 
         dialog.setWindowModality(Qt.WindowModality.NonModal)
+        if os.environ.get("RTVS_TEST_MODE"):
+            dialog.setAttribute(Qt.WidgetAttribute.WA_DontShowOnScreen, True)
         dialog.show()
-        dialog.raise_()
-        dialog.activateWindow()
+        if not os.environ.get("RTVS_TEST_MODE"):
+            dialog.raise_()
+            dialog.activateWindow()
         return dialog
 
     def _dispatch_unified_export_result(self, result: dict):

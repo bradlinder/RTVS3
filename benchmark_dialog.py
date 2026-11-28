@@ -27,6 +27,9 @@ from qt_compat import _ensure_pyside6_fallback
 _ensure_pyside6_fallback()
 
 
+_DETACHED_BENCHMARK_WORKERS: set = set()
+
+
 def create_benchmark_dialog(parent=None):
     """Factory creating the native PySide6 Benchmark Dialog."""
     from PySide6.QtCore import Qt, QThread, Signal
@@ -383,15 +386,46 @@ def create_benchmark_dialog(parent=None):
             except Exception:
                 pass
 
+        def _cleanup_workers(self):
+            for attr in ("worker_thread", "download_worker"):
+                worker = getattr(self, attr, None)
+                if worker is None:
+                    continue
+                setattr(self, attr, None)
+                for sig_name in ("item_updated", "progress", "finished"):
+                    sig = getattr(worker, sig_name, None)
+                    if sig is not None:
+                        try:
+                            sig.disconnect()
+                        except Exception:
+                            pass
+                try:
+                    if worker.isRunning():
+                        if hasattr(worker, "stop"):
+                            worker.stop()
+                        elif hasattr(worker, "cancel"):
+                            worker.cancel()
+                        worker.requestInterruption()
+                        if not worker.wait(300):
+                            worker.setParent(None)
+                            _DETACHED_BENCHMARK_WORKERS.add(worker)
+                            worker.finished.connect(lambda *_, w=worker: _DETACHED_BENCHMARK_WORKERS.discard(w))
+                            worker.finished.connect(worker.deleteLater)
+                except RuntimeError:
+                    pass
+
         def closeEvent(self, event):
+            self._cleanup_workers()
             self._save_window_size()
             super().closeEvent(event)
 
         def accept(self):
+            self._cleanup_workers()
             self._save_window_size()
             super().accept()
 
         def reject(self):
+            self._cleanup_workers()
             self._save_window_size()
             super().reject()
 

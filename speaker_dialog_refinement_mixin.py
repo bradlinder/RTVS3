@@ -9,6 +9,7 @@ Provides:
 from __future__ import annotations
 import difflib
 import html
+import os
 from typing import Any, Dict, List, Optional, Tuple
 
 try:
@@ -476,8 +477,9 @@ class SpeakerDialogRefinementMixin:
             existing._populate()
             if existing.isMinimized():
                 existing.showNormal()
-            existing.raise_()
-            existing.activateWindow()
+            if not os.environ.get("RTVS_TEST_MODE"):
+                existing.raise_()
+                existing.activateWindow()
             return existing
 
         dialog = SpeakerManagerDialog(self)
@@ -493,9 +495,12 @@ class SpeakerDialogRefinementMixin:
             return dialog
 
         dialog.setWindowModality(Qt.WindowModality.NonModal)
+        if os.environ.get("RTVS_TEST_MODE"):
+            dialog.setAttribute(Qt.WidgetAttribute.WA_DontShowOnScreen, True)
         dialog.show()
-        dialog.raise_()
-        dialog.activateWindow()
+        if not os.environ.get("RTVS_TEST_MODE"):
+            dialog.raise_()
+            dialog.activateWindow()
         return dialog
 
     def merge_contiguous_speaker_segments(self):

@@ -328,6 +328,16 @@ class WordPressPublishDialog(QDialog):
         if self.rad_frame_grab.isChecked():
             self.do_capture_frame()
 
+    def _set_preview_image(self, image_path: str):
+        pix = QPixmap(str(image_path))
+        if pix.isNull():
+            self.preview_label.clear()
+            self.preview_label.setText("Preview unavailable")
+        else:
+            self.preview_label.setPixmap(
+                pix.scaled(200, 110, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+            )
+
     def do_capture_frame(self):
         media_file = getattr(self.app, "audio_file", None)
         if not media_file or not Path(media_file).exists():
@@ -336,8 +346,7 @@ class WordPressPublishDialog(QDialog):
         pos = getattr(self.app, "current_position", self.target_timestamp)
         if capture_video_frame(str(media_file), pos, out):
             self.captured_frame_path = out
-            pix = QPixmap(out).scaled(200, 110, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-            self.preview_label.setPixmap(pix)
+            self._set_preview_image(out)
             self.rad_frame_grab.setText(f"Grab frame from video (at {format_time(pos)})")
 
     def on_image_mode_changed(self):
@@ -353,8 +362,7 @@ class WordPressPublishDialog(QDialog):
         elif self.rad_file_img.isChecked():
             self.browse_btn.setEnabled(True)
             if self.custom_image_path and Path(self.custom_image_path).exists():
-                pix = QPixmap(self.custom_image_path).scaled(200, 110, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-                self.preview_label.setPixmap(pix)
+                self._set_preview_image(self.custom_image_path)
             else:
                 self.preview_label.clear()
                 self.preview_label.setText("Click Browse to select image file")
@@ -369,8 +377,7 @@ class WordPressPublishDialog(QDialog):
         if fn:
             self.custom_image_path = fn
             self.file_path_label.setText(Path(fn).name)
-            pix = QPixmap(fn).scaled(200, 110, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-            self.preview_label.setPixmap(pix)
+            self._set_preview_image(fn)
 
     def on_configure_credentials(self):
         dlg = WordPressSettingsDialog(self)
@@ -513,12 +520,47 @@ class WordPressPublishDialog(QDialog):
             else:
                 QMessageBox.critical(self, "Publishing Error", f"Failed to publish to WordPress:\n\n{msg}")
 
+    def _cleanup_workers(self):
+        worker = getattr(self, "_worker_thread", None)
+        temp_dir = getattr(self, "temp_dir", None)
+        self._worker_thread = None
+        if worker is not None:
+            sig = getattr(worker, "finished_signal", None)
+            if sig is not None:
+                try:
+                    sig.disconnect(self.on_publish_finished)
+                except Exception:
+                    pass
+            try:
+                is_running_fn = getattr(worker, "isRunning", None)
+                if callable(is_running_fn) and is_running_fn():
+                    if hasattr(worker, "requestInterruption"):
+                        worker.requestInterruption()
+                    worker.setParent(None)
+                    _DETACHED_WP_PUBLISH_WORKERS.add(worker)
+                    worker.finished.connect(lambda *_, w=worker: _DETACHED_WP_PUBLISH_WORKERS.discard(w))
+                    if temp_dir:
+                        worker.finished.connect(lambda *_, td=temp_dir: shutil.rmtree(td, ignore_errors=True))
+                    worker.finished.connect(worker.deleteLater)
+                    return
+            except RuntimeError:
+                pass
+        if temp_dir:
+            try:
+                shutil.rmtree(temp_dir, ignore_errors=True)
+            except Exception:
+                pass
+
+    def reject(self):
+        self._cleanup_workers()
+        super().reject()
+
     def closeEvent(self, event):
-        try:
-            shutil.rmtree(self.temp_dir, ignore_errors=True)
-        except Exception:
-            pass
+        self._cleanup_workers()
         super().closeEvent(event)
+
+
+_DETACHED_WP_PUBLISH_WORKERS: set = set()
 
 
 __all__ = ["WordPressPublishDialog"]

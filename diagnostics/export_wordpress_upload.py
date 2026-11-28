@@ -100,11 +100,30 @@ class DiagnosticExportWordPressUploadMixin:
                 pass
 
         orig_wp_client_cls = getattr(wp_dest_mod, "WordPressClient", None)
+        orig_get_wp_pwd = getattr(wp_dest_mod, "_get_wp_password", None)
         orig_sub_run = wp_client_mod.subprocess.run
         captured_cmds = []
 
+        from PySide6.QtCore import QSettings
+        import prs_shared
+        settings = QSettings(prs_shared.INTERNAL_APP_ID, prs_shared.INTERNAL_APP_ID)
+        _wp_sentinel = object()
+        _wp_keys_to_restore = (
+            "wp_site_url",
+            "wp_username",
+            "wp_link_parent_episode",
+            "wp_parent_episode_pos",
+            "wp_parent_template",
+            "wp_update_parent_toc",
+            "wp_include_audio",
+            "wp_apply_audio_fades",
+            "wp_accordion_pos",
+        )
+        _saved_wp_settings = {k: settings.value(k, _wp_sentinel) for k in _wp_keys_to_restore}
+
         try:
             wp_dest_mod.WordPressClient = lambda *a, **k: DummyMockClient()
+            wp_dest_mod._get_wp_password = lambda user="": "pass"
             def fake_sub_run(cmd, *a, **k):
                 captured_cmds.append(list(cmd))
                 out_file = cmd[-1]
@@ -112,14 +131,8 @@ class DiagnosticExportWordPressUploadMixin:
                 return type("Res", (), {"returncode": 0, "stderr": ""})()
             wp_client_mod.subprocess.run = fake_sub_run
 
-            from PySide6.QtCore import QSettings
-            import prs_shared
-            settings = QSettings(prs_shared.INTERNAL_APP_ID, prs_shared.INTERNAL_APP_ID)
-            old_wp_url = settings.value("wp_site_url")
-            old_wp_user = settings.value("wp_username")
             settings.setValue("wp_site_url", "https://example.com")
             settings.setValue("wp_username", "admin")
-            wp_client_mod._set_wp_password("admin", "pass")
 
             dest_obj = wp_dest_mod.WordPressExportDestination()
             post_items = [
@@ -286,15 +299,15 @@ class DiagnosticExportWordPressUploadMixin:
         finally:
             if orig_wp_client_cls:
                 wp_dest_mod.WordPressClient = orig_wp_client_cls
+            if orig_get_wp_pwd is not None:
+                wp_dest_mod._get_wp_password = orig_get_wp_pwd
             wp_client_mod.subprocess.run = orig_sub_run
-            if old_wp_url is not None:
-                settings.setValue("wp_site_url", old_wp_url)
-            else:
-                settings.remove("wp_site_url")
-            if old_wp_user is not None:
-                settings.setValue("wp_username", old_wp_user)
-            else:
-                settings.remove("wp_username")
+            for k, orig_val in _saved_wp_settings.items():
+                if orig_val is _wp_sentinel:
+                    settings.remove(k)
+                else:
+                    settings.setValue(k, orig_val)
+            settings.sync()
 
         item.status = "PASS"
         item.message = "WordPress multi-story upload (text-only and audio-included modes) and UI export button pluralization fully verified"

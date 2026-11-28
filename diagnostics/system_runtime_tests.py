@@ -25,9 +25,9 @@ class DiagnosticSystemRuntimeTestsMixin:
             if updater.launch_and_install(str(non_existent)):
                 raise AssertionError("launch_and_install did not reject non-existent installer path")
 
-            # Verify logging function works
-            updater._write_update_log("Test log entry from diagnostic test bench")
-            log_file = updater.get_app_data_dir() / "update.log"
+            # Verify logging function works (isolated to temp directory)
+            updater._write_update_log("Test log entry from diagnostic test bench", log_dir_override=tmp_dir)
+            log_file = Path(tmp_dir) / "update.log"
             if not log_file.exists():
                 raise AssertionError(f"Expected update.log at {log_file} to exist after _write_update_log")
             log_content = log_file.read_text(encoding="utf-8")

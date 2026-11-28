@@ -827,9 +827,9 @@ class UiMenusMixin:
             if hasattr(self, "redownload_remote_media_action"):
                 self.redownload_remote_media_action.setEnabled(has_remote_src)
             self.open_remote_episode_menu.menuAction().setVisible(bool(self.plugin_file_open_actions))
-            if hasattr(self, "apply_custom_shortcuts"):
+            if hasattr(self, "apply_user_shortcuts"):
                 try:
-                    self.apply_custom_shortcuts()
+                    self.apply_user_shortcuts()
                 except Exception:
                     pass
 

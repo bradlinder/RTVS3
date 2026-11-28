@@ -277,6 +277,7 @@ def normalize_audio_sidecar(
     quiet_threshold_lufs: float = DEFAULT_QUIET_THRESHOLD_LUFS,
     quiet_threshold_dbfs: float = DEFAULT_QUIET_THRESHOLD_DBFS,
     timeout: float = 300.0,
+    cache_dir_override: str | Path | None = None,
 ) -> Path:
     """Non-destructively generate a normalized 16 kHz mono WAV sidecar.
 
@@ -318,7 +319,7 @@ def normalize_audio_sidecar(
     if delta_db <= 0.0 and report.integrated_lufs >= (target_lufs - 3.0):
         return path_obj
 
-    cache_dir = get_app_data_dir() / "cache" / "normalized"
+    cache_dir = Path(cache_dir_override) if cache_dir_override is not None else (get_app_data_dir() / "cache" / "normalized")
     cache_dir.mkdir(parents=True, exist_ok=True)
 
     tier = 2 if report.loudness_range_lu > 14.0 else 1
@@ -391,6 +392,7 @@ def get_effective_audio_for_processing(
     media_path: str | Path | None,
     settings_store=None,
     project_metadata: dict | None = None,
+    cache_dir_override: str | Path | None = None,
 ) -> Path:
     """Return the audio path to feed into ASR or diarization.
 
@@ -450,6 +452,7 @@ def get_effective_audio_for_processing(
         max_true_peak=max_true_peak,
         quiet_threshold_lufs=quiet_threshold_lufs,
         quiet_threshold_dbfs=quiet_threshold_dbfs,
+        cache_dir_override=cache_dir_override,
     )
 
     if project_metadata is not None and isinstance(project_metadata, dict):

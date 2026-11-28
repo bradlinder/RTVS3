@@ -691,7 +691,8 @@ def probe_audio_language(audio_file, sample_duration=30.0, preferred_model=None)
                         "-ar", "16000", "-ac", "1",
                         temp_probe_file,
                     ]
-                    res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=10)
+                    creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+                    res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=10, creationflags=creationflags)
                     if res.returncode == 0 and os.path.exists(temp_probe_file) and os.path.getsize(temp_probe_file) > 1000:
                         target_file = temp_probe_file
             except Exception:

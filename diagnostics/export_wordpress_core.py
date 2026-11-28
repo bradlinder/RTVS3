@@ -211,41 +211,61 @@ class DiagnosticExportWordPressCoreMixin:
             exp_dlg.story_selector_sidebar.set_include_full_episode(False, emit=True)
             exp_dlg.story_selector_sidebar.set_selected_indices([1], emit=True)
 
-            # Verify saving options as default persists export_opt_default_scope
-            idx_full_all = exp_dlg.scope_combo.findData("full_and_all_stories")
-            if idx_full_all >= 0:
-                exp_dlg.scope_combo.setCurrentIndex(idx_full_all)
-            exp_dlg.save_options_to_settings(as_default=False)
-
+            # Verify saving options as default persists export_opt_default_scope (restoring real QSettings afterward)
             from PySide6.QtCore import QSettings
             from core_utils import INTERNAL_APP_ID
             test_settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
-            if test_settings.value("export_opt_default_scope") != "full_and_all_stories":
-                raise AssertionError(f"Expected default scope 'full_and_all_stories', got '{test_settings.value('export_opt_default_scope')}'")
+            _sentinel = object()
+            _saved_export_opts = {
+                k: test_settings.value(k, _sentinel)
+                for k in test_settings.allKeys()
+                if str(k).startswith("export_opt_")
+            }
+            if "export_opt_default_scope" not in _saved_export_opts:
+                _saved_export_opts["export_opt_default_scope"] = test_settings.value("export_opt_default_scope", _sentinel)
 
-            # Verify 3-tier precedence in open_unified_export_dialog:
-            # When project_metadata has no scope, it must pick up the saved default
-            if hasattr(mock_widget.main_window, "open_unified_export_dialog"):
-                mock_widget.main_window.project_metadata = {}
-                dlg2 = mock_widget.main_window.open_unified_export_dialog(modal=False)
-                if dlg2.scope_combo.currentData() != "full_and_all_stories":
-                    raise AssertionError(f"open_unified_export_dialog failed to use saved default scope, got '{dlg2.scope_combo.currentData()}'")
-                dlg2.close()
-                dlg2.deleteLater()
+            try:
+                idx_full_all = exp_dlg.scope_combo.findData("full_and_all_stories")
+                if idx_full_all >= 0:
+                    exp_dlg.scope_combo.setCurrentIndex(idx_full_all)
+                exp_dlg.save_options_to_settings(as_default=False)
 
-                # Test resilience against Qt QPushButton.clicked / QAction.triggered boolean signal trap (passing False)
-                dlg_signal = mock_widget.main_window.open_unified_export_dialog(False, modal=False)
-                if dlg_signal.scope_combo.currentData() != "full_and_all_stories":
-                    raise AssertionError(f"open_unified_export_dialog(False) failed to guard boolean signal parameter, got '{dlg_signal.scope_combo.currentData()}'")
-                dlg_signal.close()
-                dlg_signal.deleteLater()
+                if test_settings.value("export_opt_default_scope") != "full_and_all_stories":
+                    raise AssertionError(f"Expected default scope 'full_and_all_stories', got '{test_settings.value('export_opt_default_scope')}'")
 
-            # Test direct UnifiedExportDialog instantiation picking up saved default from QSettings
-            dlg_direct = UnifiedExportDialog(mock_widget.main_window)
-            if dlg_direct.scope_combo.currentData() != "full_and_all_stories":
-                raise AssertionError(f"UnifiedExportDialog() direct instantiation failed to use saved default scope, got '{dlg_direct.scope_combo.currentData()}'")
-            dlg_direct.close()
-            dlg_direct.deleteLater()
+                # Verify 3-tier precedence in open_unified_export_dialog:
+                # When project_metadata has no scope, it must pick up the saved default
+                if hasattr(mock_widget.main_window, "open_unified_export_dialog"):
+                    mock_widget.main_window.project_metadata = {}
+                    dlg2 = mock_widget.main_window.open_unified_export_dialog(modal=False)
+                    if dlg2.scope_combo.currentData() != "full_and_all_stories":
+                        raise AssertionError(f"open_unified_export_dialog failed to use saved default scope, got '{dlg2.scope_combo.currentData()}'")
+                    dlg2.close()
+                    dlg2.deleteLater()
+
+                    # Test resilience against Qt QPushButton.clicked / QAction.triggered boolean signal trap (passing False)
+                    dlg_signal = mock_widget.main_window.open_unified_export_dialog(False, modal=False)
+                    if dlg_signal.scope_combo.currentData() != "full_and_all_stories":
+                        raise AssertionError(f"open_unified_export_dialog(False) failed to guard boolean signal parameter, got '{dlg_signal.scope_combo.currentData()}'")
+                    dlg_signal.close()
+                    dlg_signal.deleteLater()
+
+                # Test direct UnifiedExportDialog instantiation picking up saved default from QSettings
+                dlg_direct = UnifiedExportDialog(mock_widget.main_window)
+                if dlg_direct.scope_combo.currentData() != "full_and_all_stories":
+                    raise AssertionError(f"UnifiedExportDialog() direct instantiation failed to use saved default scope, got '{dlg_direct.scope_combo.currentData()}'")
+                dlg_direct.close()
+                dlg_direct.deleteLater()
+            finally:
+                for k in list(test_settings.allKeys()):
+                    if str(k).startswith("export_opt_") and k not in _saved_export_opts:
+                        test_settings.remove(k)
+                for k, orig_val in _saved_export_opts.items():
+                    if orig_val is _sentinel:
+                        test_settings.remove(k)
+                    else:
+                        test_settings.setValue(k, orig_val)
+                test_settings.sync()
 
             exp_dlg.close()
 

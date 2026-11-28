@@ -296,8 +296,8 @@ class WordPressExportTabWidget(QWidget):
 
         for i in range(len(self.wp_post_items)):
             self._update_post_list_item_label(i)
-        if hasattr(self.main_window, "set_unsaved_changes"):
-            self.main_window.set_unsaved_changes(True)
+        if hasattr(self.main_window, "mark_project_dirty"):
+            self.main_window.mark_project_dirty("Update WordPress Metadata")
         QMessageBox.information(self, "Settings Applied", f"Applied settings to {applied} selected stories.")
 
     def _apply_authors_to_all_posts(self):
@@ -326,8 +326,8 @@ class WordPressExportTabWidget(QWidget):
                 wp_meta[k] = list(v) if isinstance(v, list) else v
         for idx in range(len(self.wp_post_items)):
             self._update_post_list_item_label(idx)
-        if hasattr(self.main_window, "set_unsaved_changes"):
-            self.main_window.set_unsaved_changes(True)
+        if hasattr(self.main_window, "mark_project_dirty"):
+            self.main_window.mark_project_dirty("Update WordPress Metadata")
         QMessageBox.information(self, "Settings Applied", f"Assigned settings to all {len(self.wp_post_items)} posts.")
 
     def _apply_podcast_to_selected_stories(self):
@@ -358,8 +358,8 @@ class WordPressExportTabWidget(QWidget):
         for i in range(len(self.wp_post_items)):
             self._update_post_list_item_label(i)
 
-        if hasattr(self.main_window, "set_unsaved_changes"):
-            self.main_window.set_unsaved_changes(True)
+        if hasattr(self.main_window, "mark_project_dirty"):
+            self.main_window.mark_project_dirty("Update WordPress Metadata")
         QMessageBox.information(self, "Applied Podcast Settings", f"Applied podcast settings to {applied} selected stories.")
 
     def _apply_podcast_to_all_posts(self):
@@ -375,8 +375,8 @@ class WordPressExportTabWidget(QWidget):
             copy_podcast_meta(st.metadata.setdefault("wordpress", {}), cur_post)
         for idx in range(len(self.wp_post_items)):
             self._update_post_list_item_label(idx)
-        if hasattr(self.main_window, "set_unsaved_changes"):
-            self.main_window.set_unsaved_changes(True)
+        if hasattr(self.main_window, "mark_project_dirty"):
+            self.main_window.mark_project_dirty("Update WordPress Metadata")
         QMessageBox.information(self, "Applied Podcast Settings", f"Assigned podcast settings to all {len(self.wp_post_items)} posts.")
 
     def _sync_post_to_project(self, idx: int, log_reason: bool = False):
@@ -480,8 +480,6 @@ class WordPressExportTabWidget(QWidget):
 
         if hasattr(self.main_window, "mark_project_dirty"):
             self.main_window.mark_project_dirty("Update WordPress Metadata" if log_reason else None)
-        elif hasattr(self.main_window, "set_unsaved_changes"):
-            self.main_window.set_unsaved_changes(True)
 
     def save_all_posts_to_project(self):
         """Persist all post metadata and export options back into stories and project_metadata."""

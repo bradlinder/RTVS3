@@ -228,10 +228,12 @@ def decode_audio_file_pcm(
 
     t0 = time.perf_counter()
     try:
+        creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
         proc = subprocess.Popen(
             cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
+            creationflags=creationflags,
         )
         pcm_bytes, stderr_bytes = proc.communicate(timeout=60)
         if proc.returncode != 0:

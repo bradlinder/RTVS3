@@ -350,10 +350,10 @@ def fetch_latest_release(repo: str) -> dict:
     raise RuntimeError("No published releases found.")
 
 
-def _write_update_log(msg: str):
+def _write_update_log(msg: str, log_dir_override: Path | str | None = None):
     """Append timestamped message to the update helper log in LocalAppData."""
     try:
-        log_dir = get_app_data_dir()
+        log_dir = Path(log_dir_override) if log_dir_override is not None else get_app_data_dir()
         log_dir.mkdir(parents=True, exist_ok=True)
         log_file = log_dir / "update.log"
         ts = time.strftime("%Y-%m-%d %H:%M:%S")

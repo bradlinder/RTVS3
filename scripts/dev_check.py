@@ -281,6 +281,162 @@ def check_qt_orphan_widget_flashes(root_dir: Path | None = None) -> Tuple[bool, 
     return True, f"Scanned {scanned} modules (0 pre-attach orphan widget flashes)"
 
 
+def _iter_prod_py_files(root_dir: Path) -> List[Path]:
+    skip = {".git", ".snapshots", ".archive", "__pycache__", "node_modules", "build", "dist", ".venv", "diagnostics", "scripts", "tests", "installer"}
+    out: List[Path] = []
+    for p in sorted(root_dir.rglob("*.py")):
+        if any(part in skip for part in p.parts):
+            continue
+        if p.name.startswith(("diagnostic", "test_", "bump_", "sync", "preview_", "snapshot_", "build_", "roadmap_")):
+            continue
+        out.append(p)
+    return out
+
+
+def check_mainwindow_contracts(root_dir: Path | None = None) -> Tuple[bool, str]:
+    """Static contract guard: verify MainWindow mixin self.<method>() and main_window/app/owner calls exist."""
+    base = Path(root_dir) if root_dir is not None else ROOT_DIR
+    if str(base) not in sys.path:
+        sys.path.insert(0, str(base))
+    from RadioTVSegmenter import MainWindow
+
+    mw_attrs = set(dir(MainWindow))
+    mixin_files: List[Tuple[str, Path]] = []
+    for cls in MainWindow.__mro__:
+        mod = getattr(cls, "__module__", "")
+        if mod and mod != "builtins":
+            p = base / (mod.replace(".", "/") + ".py")
+            if p.is_file():
+                mixin_files.append((cls.__name__, p))
+                try:
+                    tree = ast.parse(p.read_text(encoding="utf-8", errors="ignore"))
+                    for n in ast.walk(tree):
+                        if isinstance(n, ast.Attribute) and isinstance(n.value, ast.Name) and n.value.id == "self" and isinstance(n.ctx, ast.Store):
+                            mw_attrs.add(n.attr)
+                        elif isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id == "setattr" and len(n.args) >= 2:
+                            if isinstance(n.args[0], ast.Name) and n.args[0].id == "self" and isinstance(n.args[1], ast.Constant) and isinstance(n.args[1].value, str):
+                                mw_attrs.add(n.args[1].value)
+                except Exception:
+                    pass
+
+    qapp_allow = {"exec", "processEvents", "instance", "quit", "topLevelWidgets", "primaryScreen", "clipboard", "setPalette", "setStyleSheet", "setFont"}
+    legacy_allow = {
+        ("media_batch.py", "translate_document_file"),
+        ("plugins/wordpress/wp_publish_dialog.py", "get_story_transcript"),
+    }
+    violations: List[str] = []
+
+    for cname, p in mixin_files:
+        try:
+            tree = ast.parse(p.read_text(encoding="utf-8", errors="ignore"))
+        except Exception:
+            continue
+        rel = p.relative_to(base).as_posix()
+        for cls_node in tree.body:
+            if isinstance(cls_node, ast.ClassDef) and cls_node.name == cname:
+                for n in ast.walk(cls_node):
+                    if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute):
+                        if isinstance(n.func.value, ast.Name) and n.func.value.id == "self":
+                            attr = n.func.attr
+                            if attr not in mw_attrs and (rel, attr) not in legacy_allow:
+                                violations.append(f"{rel}:{n.lineno} ({cname}) self.{attr}()")
+
+    for p in _iter_prod_py_files(base):
+        try:
+            tree = ast.parse(p.read_text(encoding="utf-8", errors="ignore"))
+        except Exception:
+            continue
+        rel = p.relative_to(base).as_posix()
+        for n in ast.walk(tree):
+            if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute):
+                try:
+                    target = ast.unparse(n.func.value)
+                except Exception:
+                    continue
+                if target in ("main_window", "self.main_window", "self.app", "self.owner", "self.main_win"):
+                    attr = n.func.attr
+                    if attr not in mw_attrs and attr not in qapp_allow and (rel, attr) not in legacy_allow:
+                        violations.append(f"{rel}:{n.lineno} {target}.{attr}()")
+
+    if violations:
+        return False, f"{len(violations)} missing MainWindow contract call(s): " + "; ".join(violations[:4])
+    return True, f"Verified {len(mixin_files)} mixins & all cross-module MainWindow calls"
+
+
+def check_qt_safety_hygiene(root_dir: Path | None = None) -> Tuple[bool, str]:
+    """Static guard: QDialog classes starting QThread/Worker must handle closeEvent & reject/done; no unguarded QPixmap().scaled()."""
+    base = Path(root_dir) if root_dir is not None else ROOT_DIR
+    violations: List[str] = []
+    files = _iter_prod_py_files(base)
+    for p in files:
+        text = p.read_text(encoding="utf-8", errors="ignore")
+        rel = p.relative_to(base).as_posix()
+        for idx, line in enumerate(text.splitlines(), 1):
+            if "QPixmap(" in line and ".scaled(" in line:
+                violations.append(f"{rel}:{idx} inline QPixmap(...).scaled() without isNull() check")
+        try:
+            tree = ast.parse(text)
+        except Exception:
+            continue
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ClassDef):
+                bases = [ast.unparse(b) for b in node.bases]
+                if any(b == "QDialog" or b.endswith(".QDialog") for b in bases):
+                    seg = ast.get_source_segment(text, node) or ""
+                    if ".start()" in seg and ("Worker" in seg or "QThread" in seg):
+                        methods = {n.name for n in node.body if isinstance(n, ast.FunctionDef)}
+                        if not ("closeEvent" in methods and ("reject" in methods or "done" in methods)):
+                            violations.append(f"{rel}:{node.lineno} {node.name} missing closeEvent+reject/done worker teardown")
+
+    if violations:
+        return False, f"{len(violations)} Qt safety violation(s): " + "; ".join(violations[:4])
+    return True, f"Scanned {len(files)} modules (0 unguarded QPixmap.scaled or QDialog thread leaks)"
+
+
+def check_windows_and_frozen_hygiene(root_dir: Path | None = None) -> Tuple[bool, str]:
+    """Static guard: Windows subprocess CREATE_NO_WINDOW flags and frozen-safe diagnostic tests."""
+    base = Path(root_dir) if root_dir is not None else ROOT_DIR
+    violations: List[str] = []
+    for p in _iter_prod_py_files(base):
+        text = p.read_text(encoding="utf-8", errors="ignore")
+        rel = p.relative_to(base).as_posix()
+        try:
+            tree = ast.parse(text)
+        except Exception:
+            continue
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+                if node.func.attr in ("run", "Popen", "check_output", "check_call"):
+                    func_str = ast.unparse(node.func)
+                    if "subprocess" in func_str:
+                        kw_names = {kw.arg for kw in node.keywords}
+                        seg = ast.get_source_segment(text, node) or ""
+                        if any(posix_cmd in seg for posix_cmd in ('["open"', '["xdg-open"', '["xattr"')):
+                            continue
+                        ctx_lines = "\n".join(text.splitlines()[max(0, node.lineno - 6):node.lineno])
+                        if ".appimage" in ctx_lines.lower() or 'sys.platform == "darwin"' in ctx_lines or 'sys.platform.startswith("linux")' in ctx_lines:
+                            continue
+                        if "creationflags" not in kw_names and "**" not in seg and "subprocess_kwargs" not in seg and "kwargs" not in seg:
+                            violations.append(f"{rel}:{node.lineno} subprocess.{node.func.attr} missing creationflags")
+
+    diag_files = list((base / "diagnostics").glob("*.py")) + list(base.glob("diagnostic_*.py"))
+    for dp in diag_files:
+        dtext = dp.read_text(encoding="utf-8", errors="ignore")
+        drel = dp.relative_to(base).as_posix()
+        if "Path(\"README.md\").read_text" in dtext or "Path('README.md').read_text" in dtext:
+            violations.append(f"{drel} unguarded Path('README.md').read_text()")
+        for idx, line in enumerate(dtext.splitlines(), 1):
+            s = line.strip()
+            if s.startswith(("from scripts.", "import scripts.")):
+                ctx = "\n".join(dtext.splitlines()[max(0, idx - 5):idx])
+                if "frozen" not in ctx:
+                    violations.append(f"{drel}:{idx} unguarded scripts.* import")
+
+    if violations:
+        return False, f"{len(violations)} Windows/frozen hygiene issue(s): " + "; ".join(violations[:4])
+    return True, "Windows CREATE_NO_WINDOW & frozen-test hygiene verified"
+
+
 def check_regression_tests() -> Tuple[bool, str]:
     """Executes change-aware Tier 2 diagnostic test suite."""
     cmd = [sys.executable, str(ROOT_DIR / "test_runner.py"), "--quiet"]
@@ -304,7 +460,10 @@ def main() -> None:
         ("3. Zero-Dep Preview Sync", check_preview_sync),
         ("4. Modular Budget Guard (<1k lines)", check_modular_budget),
         ("5. Qt Orphan-Window Flash Guard", check_qt_orphan_widget_flashes),
-        ("6. Change-Aware Regression Tests", check_regression_tests),
+        ("6. MainWindow & Mixin Contract Guard", check_mainwindow_contracts),
+        ("7. Qt Thread Teardown & QPixmap Guard", check_qt_safety_hygiene),
+        ("8. Windows & Frozen-Test Hygiene", check_windows_and_frozen_hygiene),
+        ("9. Change-Aware Regression Tests", check_regression_tests),
     ]
 
     all_passed = True

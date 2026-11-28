@@ -139,7 +139,7 @@ class ProjectExportMixin(
                 media_path = Path(audio_file).resolve()
                 data["audio_reference"] = f"Media/{media_path.name}"
                 data["audio_file_name"] = media_path.name
-                data["audio_duration"] = float(getattr(self, "audio_duration", 0.0) or 0.0)
+                data["audio_duration"] = float(getattr(self, "duration", 0.0) or 0.0)
 
             with zipfile.ZipFile(dest_zip, "w", compression=zipfile.ZIP_DEFLATED) as zf:
                 # 1. Project file inside zip

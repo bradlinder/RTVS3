@@ -73,10 +73,13 @@ class UiDialogLaunchersMixin:
         if hasattr(self.find_dialog, "_update_local_match_count"):
             self.find_dialog._update_local_match_count()
 
+        if os.environ.get("RTVS_TEST_MODE"):
+            self.find_dialog.setAttribute(Qt.WidgetAttribute.WA_DontShowOnScreen, True)
         self.find_dialog.show()
-        self.find_dialog.raise_()
-        self.find_dialog.activateWindow()
-        self.find_dialog.find_input.setFocus()
+        if not os.environ.get("RTVS_TEST_MODE"):
+            self.find_dialog.raise_()
+            self.find_dialog.activateWindow()
+            self.find_dialog.find_input.setFocus()
 
     def open_find_replace(self):
         """Display the Find and Replace dialog window (alias for open_find_dialog)."""

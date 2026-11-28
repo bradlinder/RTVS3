@@ -7,6 +7,7 @@ Provides:
 """
 
 from __future__ import annotations
+import os
 from typing import Any, List, Optional
 
 try:
@@ -874,8 +875,9 @@ class StoryCrudMixin:
             existing.refresh_from_main_window(target_story_index=target_story_index)
             if existing.isMinimized():
                 existing.showNormal()
-            existing.raise_()
-            existing.activateWindow()
+            if not os.environ.get("RTVS_TEST_MODE"):
+                existing.raise_()
+                existing.activateWindow()
             return existing
 
         dlg = StoryMetadataDialog(self, main_window=self, target_story_index=target_story_index)
@@ -891,9 +893,12 @@ class StoryCrudMixin:
             return dlg
 
         dlg.setWindowModality(Qt.WindowModality.NonModal)
+        if os.environ.get("RTVS_TEST_MODE"):
+            dlg.setAttribute(Qt.WidgetAttribute.WA_DontShowOnScreen, True)
         dlg.show()
-        dlg.raise_()
-        dlg.activateWindow()
+        if not os.environ.get("RTVS_TEST_MODE"):
+            dlg.raise_()
+            dlg.activateWindow()
         return dlg
 
     def _notify_floating_dialogs(self):

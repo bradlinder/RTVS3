@@ -24,7 +24,7 @@ except ImportError:
         from prs_shared import INTERNAL_APP_ID, make_dialog_maximizable, PROJECT_VERSION
     except Exception:
         INTERNAL_APP_ID = "RadioTVStorySegmenter"
-        PROJECT_VERSION = "3.10.36-beta"
+        PROJECT_VERSION = "3.10.37-beta"
         def make_dialog_maximizable(dlg): pass
 
 logger = logging.getLogger(__name__)
@@ -298,9 +298,15 @@ def apply_backup_payload(
                 settings_store.sync()
         except Exception:
             pass
-        if main_window is not None and hasattr(main_window, "refresh_glossary"):
+        if main_window is not None:
+            if hasattr(main_window, "apply_glossary_to_whisper_context"):
+                try:
+                    main_window.apply_glossary_to_whisper_context()
+                except Exception:
+                    pass
             try:
-                main_window.refresh_glossary()
+                from spellcheck_widgets import refresh_all_spellcheckers
+                refresh_all_spellcheckers(main_window=main_window)
             except Exception:
                 pass
         restored_items.append(f"Glossary ({len(glossary)} entries restored)")

@@ -130,7 +130,8 @@ class DiagnosticLoudnessTestsMixin:
             )
             rep_std = probe_media_loudness(std_wav)
             assert rep_std.needs_boost is False, f"Expected needs_boost False for standard audio, got {rep_std.needs_boost}"
-            res_bypass = normalize_audio_sidecar(std_wav, report=rep_std, target_lufs=-16.0)
+            norm_cache = Path(temp_dir) / "norm_cache"
+            res_bypass = normalize_audio_sidecar(std_wav, report=rep_std, target_lufs=-16.0, cache_dir_override=norm_cache)
             assert res_bypass == std_wav, f"Expected bypass to return original path, got {res_bypass}"
 
             # 2. Test Tier 1: Linear gain + True-Peak Limiter on quiet audio (LRA <= 14 LU)
@@ -151,7 +152,7 @@ class DiagnosticLoudnessTestsMixin:
             assert rep_quiet.needs_boost is True
 
             sidecar_tier1 = normalize_audio_sidecar(
-                quiet_wav, report=rep_quiet, target_lufs=-16.0, max_true_peak=-1.5
+                quiet_wav, report=rep_quiet, target_lufs=-16.0, max_true_peak=-1.5, cache_dir_override=norm_cache
             )
             assert sidecar_tier1 != quiet_wav, "Expected normalized sidecar for quiet audio"
             assert sidecar_tier1.is_file(), f"Sidecar file does not exist: {sidecar_tier1}"
@@ -165,7 +166,7 @@ class DiagnosticLoudnessTestsMixin:
             # 3. Test Tier 2: Dynamic speech leveler for high dynamic range (LRA > 14 LU)
             rep_high_lra = dataclasses.replace(rep_quiet, loudness_range_lu=18.0)
             sidecar_tier2 = normalize_audio_sidecar(
-                quiet_wav, report=rep_high_lra, target_lufs=-16.0, max_true_peak=-1.5
+                quiet_wav, report=rep_high_lra, target_lufs=-16.0, max_true_peak=-1.5, cache_dir_override=norm_cache
             )
             assert sidecar_tier2 != quiet_wav
             assert sidecar_tier2.is_file()
@@ -173,7 +174,7 @@ class DiagnosticLoudnessTestsMixin:
 
             # 4. Test get_effective_audio_for_processing with project metadata population
             meta = {}
-            eff_path = get_effective_audio_for_processing(quiet_wav, project_metadata=meta)
+            eff_path = get_effective_audio_for_processing(quiet_wav, project_metadata=meta, cache_dir_override=norm_cache)
             assert eff_path == sidecar_tier1 or eff_path.is_file()
             assert "audio_normalization" in meta
             assert "probed_integrated_lufs" in meta["audio_normalization"]
@@ -229,6 +230,9 @@ class DiagnosticLoudnessTestsMixin:
 
         temp_dir = tempfile.mkdtemp(prefix="rtvs_test_norm_dlg_")
         dlg = None
+        from unittest.mock import patch
+        _appdata_patch = patch("audio_normalization.get_app_data_dir", return_value=Path(temp_dir) / "appdata")
+        _appdata_patch.start()
         try:
             # 1. Create a synthetic test wav
             test_wav = Path(temp_dir) / "dialog_test.wav"
@@ -394,6 +398,7 @@ class DiagnosticLoudnessTestsMixin:
             item.status = "PASS"
             item.message = "Audio loudness preferences and non-modal preferences inspector window verified"
         finally:
+            _appdata_patch.stop()
             if orig_info:
                 QMessageBox.information = orig_info
             if orig_warn:

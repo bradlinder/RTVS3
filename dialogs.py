@@ -38,6 +38,9 @@ logger = logging.getLogger(__name__)
 __all__ = ["AudioLoudnessNormalizationDialog"]
 
 
+_DETACHED_LOUDNESS_WORKERS: set = set()
+
+
 class AudioLoudnessNormalizationDialog(QDialog):
     """Dedicated modal dialog for inspecting media loudness metrics and manually normalizing."""
 
@@ -73,7 +76,11 @@ class AudioLoudnessNormalizationDialog(QDialog):
                 except Exception:
                     pass
                 worker.quit()
-                worker.wait(2000)
+                if not worker.wait(2000):
+                    worker.setParent(None)
+                    _DETACHED_LOUDNESS_WORKERS.add(worker)
+                    worker.finished.connect(lambda *_, w=worker: _DETACHED_LOUDNESS_WORKERS.discard(w))
+                    worker.finished.connect(worker.deleteLater)
 
     def closeEvent(self, event):
         self._stop_probe_worker()

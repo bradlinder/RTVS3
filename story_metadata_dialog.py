@@ -227,8 +227,6 @@ class StoryMetadataDialog(QDialog):
 
         if hasattr(self.main_window, "mark_project_dirty"):
             self.main_window.mark_project_dirty("Update Story Metadata")
-        elif hasattr(self.main_window, "set_unsaved_changes"):
-            self.main_window.set_unsaved_changes(True)
 
         if hasattr(self.main_window, "save_project"):
             try:

@@ -962,9 +962,7 @@ class ProjectLifecycleMixin:
             purged_items.append("Vínculo de medios" if is_es else "Media Link")
 
         # Refresh UI
-        if hasattr(self, "refresh_transcript_view"):
-            self.refresh_transcript_view()
-        elif hasattr(self, "render_transcript") and self.transcript:
+        if hasattr(self, "render_transcript") and self.transcript:
             self.render_transcript()
 
         if hasattr(self, "refresh_story_list"):
