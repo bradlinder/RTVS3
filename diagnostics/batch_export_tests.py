@@ -235,9 +235,10 @@ class DiagnosticBatchExportTestsMixin:
         paths_text = extract_dropped_file_paths(mime_text)
         assert paths_text == ["/videos/clip1.mov", "/videos/clip2.mov" if "/videos/clip2.mov" in paths_text else "/videos/clip2.mkv"], f"Failed text lines extraction: {paths_text}"
 
-        # 2. Test directory ingestion and deduplication in BatchProcessingDialog
+        # 2. Test directory ingestion, media-only filtering, and deduplication in BatchProcessingDialog
         temp_dir = tempfile.mkdtemp(prefix="rtvs_batch_dnd_test_")
         try:
+            import batch_dialog
             d = Path(temp_dir)
             f1 = d / "interview1.mp3"
             f2 = d / "interview2.wav"
@@ -245,40 +246,35 @@ class DiagnosticBatchExportTestsMixin:
             sub_d.mkdir()
             f3 = sub_d / "interview3.flac"
             doc1 = d / "notes.docx"
-            for file_path in (f1, f2, f3, doc1):
+            txt1 = d / "agenda.txt"
+            for file_path in (f1, f2, f3, doc1, txt1):
                 file_path.touch()
 
-            # Thread-safe verification of path expansion, recursive folder ingestion, and deduplication logic
-            collected_paths: List[str] = []
-            test_input_paths = [str(f1), str(f1), str(d)]
-            for item_p in test_input_paths:
-                if not item_p:
-                    continue
-                p = Path(str(item_p).strip().strip('"').strip("'"))
-                if p.is_file() and str(p) not in collected_paths:
-                    collected_paths.append(str(p))
-                elif p.is_dir():
-                    for sub in sorted(p.rglob("*")):
-                        if sub.is_file() and str(sub) not in collected_paths:
-                            collected_paths.append(str(sub))
+            collected_paths, skipped_count = batch_dialog.collect_batch_media_paths(
+                [str(f1), str(f1), str(d)]
+            )
 
             # Verify deduplication (f1 should only appear once)
             assert collected_paths.count(str(f1)) == 1, f"Duplicate file not deduplicated: {collected_paths}"
-            # Verify recursive folder ingestion
+            # Verify recursive folder ingestion of media files
             assert str(f2) in collected_paths, f"f2 missing from recursive ingestion: {collected_paths}"
             assert str(f3) in collected_paths, f"f3 missing from recursive ingestion: {collected_paths}"
-            assert str(doc1) in collected_paths, f"doc1 missing from recursive ingestion: {collected_paths}"
+            # Verify non-media documents are skipped cleanly
+            assert str(doc1) not in collected_paths, f"Non-media docx should be filtered out: {collected_paths}"
+            assert str(txt1) not in collected_paths, f"Non-media txt should be filtered out: {collected_paths}"
+            assert skipped_count == 2, f"Expected 2 skipped non-media files, got {skipped_count}"
 
             # Verify BatchProcessingDialog class interface without instantiating widgets on worker thread
             try:
-                import batch_dialog
                 assert hasattr(batch_dialog, "BatchProcessingDialog"), "batch_dialog missing BatchProcessingDialog"
                 assert hasattr(batch_dialog.BatchProcessingDialog, "add_paths"), "BatchProcessingDialog missing add_paths"
 
-                # Verify Timeline and MainWindow drag-and-drop handlers
+                # Verify Timeline and MainWindow drag-and-drop handlers and removal of dead document stub
                 import timeline_widgets
                 import timeline_overview_widget
                 from RadioTVSegmenter import MainWindow
+                assert not hasattr(MainWindow, "_batch_next_document"), "Dead _batch_next_document stub still present"
+                assert not hasattr(MainWindow, "_batch_document_error"), "Dead _batch_document_error stub still present"
                 assert hasattr(timeline_widgets.TimelineCanvas, "dragEnterEvent"), "TimelineCanvas missing dragEnterEvent"
                 assert hasattr(timeline_widgets.TimelineCanvas, "dragMoveEvent"), "TimelineCanvas missing dragMoveEvent"
                 assert hasattr(timeline_widgets.TimelineCanvas, "dropEvent"), "TimelineCanvas missing dropEvent"

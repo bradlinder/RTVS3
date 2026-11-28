@@ -356,16 +356,95 @@ class DiagnosticCloudStorageTestsMixin:
             if not (cache_peaks / "audio.peaks").exists():
                 raise AssertionError("Waveform peak file was unexpectedly deleted during thumbnails-only purge")
 
-            # 4. Test remaining purge (strictly scoped to temp project_dirs)
-            files_del2, bytes_freed2 = purge_caches(
-                clear_thumbnails=False,
-                clear_waveforms=True,
-                clear_audio_extracts=True,
+            # 4. Test cooperative cancellation & background CacheScanWorker / CachePurgeWorker
+            cancelled_stats = get_cache_disk_usage(
                 project_dirs=[proj_dir],
                 include_global_caches=False,
+                include_settings_dirs=False,
+                cancel_check=lambda: True,
             )
-            if files_del2 < 1:
-                raise AssertionError(f"purge_caches failed to clear remaining peaks: {files_del2} files")
+            if cancelled_stats["total_files"] != 0:
+                raise AssertionError(f"cancel_check=True should short-circuit scan: {cancelled_stats}")
+
+            del_cancel, _ = purge_caches(
+                clear_thumbnails=False,
+                clear_waveforms=True,
+                clear_audio_extracts=False,
+                project_dirs=[proj_dir],
+                include_global_caches=False,
+                cancel_check=lambda: True,
+            )
+            if del_cancel != 0 or not (cache_peaks / "audio.peaks").exists():
+                raise AssertionError("cancel_check=True should short-circuit purge without deleting peaks")
+
+            from cache_workers import CacheScanWorker, CachePurgeWorker
+            for attr_name in ("closeEvent", "reject", "accept", "refresh_stats", "_do_purge"):
+                if not hasattr(ClearCacheDialog, attr_name):
+                    raise AssertionError(f"ClearCacheDialog missing {attr_name}")
+
+            scan_results = []
+            scan_worker = CacheScanWorker(
+                project_dirs=[proj_dir],
+                include_global_caches=False,
+                include_settings_dirs=False,
+            )
+            scan_worker.finished_scan.connect(lambda st: scan_results.append(st))
+            scan_worker.start()
+            if not scan_worker.wait(5000):
+                raise AssertionError("CacheScanWorker did not finish within 5s")
+
+            from PySide6.QtCore import QThread
+            from PySide6.QtWidgets import QApplication
+            app = QApplication.instance()
+            if app is not None and QThread.currentThread() == app.thread():
+                app.processEvents()
+                if not scan_results or scan_results[0]["waveforms"]["count"] < 1:
+                    raise AssertionError(f"CacheScanWorker failed to report waveforms: {scan_results}")
+
+                dlg = ClearCacheDialog(
+                    None,
+                    project_dirs=[proj_dir],
+                    auto_refresh=False,
+                    include_global_caches=False,
+                    include_settings_dirs=False,
+                )
+                try:
+                    dlg.refresh_stats()
+                    deadline = time.monotonic() + 5.0
+                    while dlg._active_worker is not None and time.monotonic() < deadline:
+                        app.processEvents()
+                        time.sleep(0.01)
+                    app.processEvents()
+                    if dlg.lbl_total_val.text().startswith("0 B"):
+                        raise AssertionError(f"ClearCacheDialog async scan did not populate total: {dlg.lbl_total_val.text()}")
+
+                    dlg._do_purge(True, True, True)
+                    deadline = time.monotonic() + 5.0
+                    while dlg._active_worker is not None and time.monotonic() < deadline:
+                        app.processEvents()
+                        time.sleep(0.01)
+                    app.processEvents()
+                    if "0 B" not in dlg.lbl_total_val.text() or "freed" not in dlg.lbl_status.text().lower():
+                        raise AssertionError(
+                            f"ClearCacheDialog async purge did not update UI: total={dlg.lbl_total_val.text()}, status={dlg.lbl_status.text()}"
+                        )
+                finally:
+                    dlg.reject()
+            else:
+                purge_worker = CachePurgeWorker(
+                    clear_thumbnails=False,
+                    clear_waveforms=True,
+                    clear_audio_extracts=True,
+                    purge_project_dirs=[proj_dir],
+                    scan_project_dirs=[proj_dir],
+                    include_global_caches=False,
+                    include_settings_dirs=False,
+                )
+                purge_worker.start()
+                if not purge_worker.wait(5000):
+                    raise AssertionError("CachePurgeWorker did not finish within 5s")
+                if (cache_peaks / "audio.peaks").exists():
+                    raise AssertionError("CachePurgeWorker failed to clear remaining peaks")
 
         # 5. Test cleanup_old_thumbnail_cache with active session protection & stale purging (isolated temp dir)
         from cache_manager import (

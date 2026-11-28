@@ -321,7 +321,6 @@ def check_mainwindow_contracts(root_dir: Path | None = None) -> Tuple[bool, str]
 
     qapp_allow = {"exec", "processEvents", "instance", "quit", "topLevelWidgets", "primaryScreen", "clipboard", "setPalette", "setStyleSheet", "setFont"}
     legacy_allow = {
-        ("media_batch.py", "translate_document_file"),
         ("plugins/wordpress/wp_publish_dialog.py", "get_story_transcript"),
     }
     violations: List[str] = []

@@ -839,6 +839,22 @@ def main():
 
 if __name__ == "__main__":
     code = main()
+    if "PySide6.QtWidgets" in sys.modules:
+        try:
+            from PySide6.QtCore import QEvent
+            from PySide6.QtWidgets import QApplication
+            _app = QApplication.instance()
+            if _app is not None:
+                for _w in list(_app.topLevelWidgets()):
+                    try:
+                        _w.close()
+                        _w.deleteLater()
+                    except Exception:
+                        pass
+                _app.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+                _app.processEvents()
+        except Exception:
+            pass
     sys.stdout.flush()
     sys.stderr.flush()
     os._exit(code)

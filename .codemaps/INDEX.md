@@ -1,18 +1,18 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-28 14:53:10 | Total Files: 210
+> Generated: 2026-11-28 15:18:22 | Total Files: 211
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 686 | Radio & TV Segmenter — v3.10.37-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 684 | Radio & TV Segmenter — v3.10.38-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 477 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `parse_ebur128_summary()`, `probe_media_duration_seconds()`, `probe_media_loudness()` *(+2 more)* |
 | `audio_normalization_worker.py` | 89 | Background QThread worker for non-blocking EBU R128 loudn... | `AudioLoudnessProbeWorker` |
 | `background_workers.py` | 911 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `get_waveform_peak_cache_path()`, `read_waveform_peak_cache()` *(+2 more)* |
 | `backup_manager.py` | 629 | Unified State Serialization & Local Backup & Restore Engine. | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
-| `batch_dialog.py` | 702 | Radio & TV Story Segmenter — Batch Processing Dialog & Dr... | `BatchFileListWidget`, `BatchProcessingDialog` |
+| `batch_dialog.py` | 739 | Radio & TV Story Segmenter — Batch Processing Dialog & Dr... | `BatchFileListWidget`, `BatchProcessingDialog`, `is_supported_batch_media()`, `collect_batch_media_paths()` |
 | `benchmark.py` | 216 | Radio & TV Story Segmenter — Performance & Speed Benchmar... | `run_cli_benchmark()`, `main()` |
 | `benchmark_dialog.py` | 708 | benchmark_dialog.py - PySide6 Graphical Benchmark Dialog ... | `create_benchmark_dialog()` |
 | `benchmark_engine.py` | 903 | benchmark_engine.py - Core High-Precision Performance Ben... | `BenchmarkEngine` |
@@ -20,7 +20,8 @@
 | `bootstrap.py` | 385 | Install-safe startup environment configuration for Radio ... | `NullWriter`, `init_null_streams_and_hf_env()`, `patch_av_open()`, `app_data_dir()` *(+7 more)* |
 | `build_installer.py` | 457 | Build the installable Radio & TV Segmenter application wi... | `find_tool()`, `run()`, `provision_optional_runtime_tools()`, `sync_installer_scripts()` *(+3 more)* |
 | `bump_version.py` | 513 | bump_version.py — Automated Version Synchronization Engine | `normalize_version()`, `get_current_version()`, `compute_bump()`, `detect_modified_plugins()` *(+3 more)* |
-| `cache_manager.py` | 716 | Radio & TV Segmenter — Cache management, disk usage scann... | `ClearCacheDialog`, `register_active_thumbnail_dir()`, `unregister_active_thumbnail_dir()`, `get_active_thumbnail_dirs()` *(+3 more)* |
+| `cache_manager.py` | 927 | Radio & TV Segmenter — Cache management, disk usage scann... | `ClearCacheDialog`, `register_active_thumbnail_dir()`, `unregister_active_thumbnail_dir()`, `get_active_thumbnail_dirs()` *(+4 more)* |
+| `cache_workers.py` | 146 | Radio & TV Segmenter — Background QThread workers for Cle... | `CacheScanWorker`, `CachePurgeWorker`, `detach_cache_worker()` |
 | `comment_widgets.py` | 350 | comment_widgets.py - Range-Anchored Comments Panel & Comm... | `CommentEditorDialog`, `CommentCardWidget`, `CommentsPanel` |
 | `core_utils.py` | 776 | Radio & TV Segmenter — Core filesystem, path, timing, and... | `StoryVocabulary`, `safe_process_events()`, `get_active_theme_mode()`, `apply_window_titlebar_theme()` *(+24 more)* |
 | `diagnostic_batch_tests.py` | 19 | Diagnostic batch and editing workflow test bench facade. | `DiagnosticBatchTestsMixin` |
@@ -35,8 +36,8 @@
 | `diagnostic_speaker_cleanup_tests.py` | 996 | Diagnostic tests for Phase 2 features: minimum story leng... | `DiagnosticSpeakerCleanupTestsMixin` |
 | `diagnostic_wordpress_tests.py` | 109 | Diagnostic tests for WordPress PublishPress Author mappin... | `DiagnosticWordPressTestsMixin` |
 | `diagnostics/__init__.py` | 28 | Modular diagnostic test mixin components for the RTVS Tes... | - |
-| `diagnostics/batch_export_tests.py` | 469 | Batch processing, drag-and-drop ingestion, PDF, and DAW e... | `DiagnosticBatchExportTestsMixin` |
-| `diagnostics/cloud_storage_tests.py` | 604 | Plugin interface, project persistence, cache management, ... | `DiagnosticCloudStorageTestsMixin` |
+| `diagnostics/batch_export_tests.py` | 465 | Batch processing, drag-and-drop ingestion, PDF, and DAW e... | `DiagnosticBatchExportTestsMixin` |
+| `diagnostics/cloud_storage_tests.py` | 683 | Plugin interface, project persistence, cache management, ... | `DiagnosticCloudStorageTestsMixin` |
 | `diagnostics/editing_workflow_tests.py` | 590 | Fades, translation routing, speaker dialog flow, story bo... | `DiagnosticEditingWorkflowTestsMixin` |
 | `diagnostics/editor_guides_and_daw_tests.py` | 500 | Find-replace, user guides viewer, and REAPER DAW companio... | `DiagnosticEditorGuidesAndDawTestsMixin` |
 | `diagnostics/editor_story_ui_tests.py` | 884 | Story transcript highlighting, smart copy, duration & hea... | `DiagnosticEditorStoryUiTestsMixin` |
@@ -72,7 +73,7 @@
 | `installer/build_tools/env_checks.py` | 188 | Environment validation, external tool resolution, and sub... | `exe_name()`, `find_tool()`, `check_cpu_only_torch()`, `torch_windows_binary_flags()` *(+1 more)* |
 | `installer/build_tools/packaging.py` | 368 | Bundle pruning, plugin archive packaging, runtime tools, ... | `provision_optional_runtime_tools()`, `prune_unneeded_bundled_files()`, `sync_installer_scripts()`, `compile_windows_installer()` *(+1 more)* |
 | `installer/pyinstaller/torch_dll_hook.py` | 70 | PyInstaller runtime hook for Windows ML/native DLL resolu... | - |
-| `media_batch.py` | 1907 | Radio & TV Segmenter v1.1.1 — media batch responsibilities. | `MediaBatchMixin` |
+| `media_batch.py` | 1865 | Radio & TV Segmenter v1.1.1 — media batch responsibilities. | `MediaBatchMixin` |
 | `model_cleanup_dialog.py` | 468 | Manage Models dialog and shared runtime cleanup helpers f... | `ModelCleanupDialog`, `format_directory_size()` |
 | `model_install_workers.py` | 189 | Radio & TV Segmenter — Model Download and Installation Ba... | `WhisperModelInstallWorker`, `DiarizationModelInstallWorker`, `get_diarization_model_dir()`, `is_diarization_model_available()` |
 | `model_management.py` | 621 | Radio & TV Segmenter v1.1.1 — model management responsibi... | `_DummyTranslationWorker`, `ModelManagementMixin` |
@@ -125,7 +126,7 @@
 | `preferences_tabs_media.py` | 731 | Radio & TV Story Segmenter — Preferences Modal Media & Wo... | `build_playback_timeline_tab()`, `build_detection_tab()`, `build_batch_tab()`, `build_cleanup_tab()` *(+1 more)* |
 | `preview_manager.py` | 270 | AI Studio Web Preview Manager for Radio & TV Story Segmen... | `get_project_version()`, `restore_preview()`, `sync_version()`, `main()` |
 | `process_lifecycle.py` | 191 | Radio & TV Segmenter — Subprocess tracking and OS-level j... | `init_child_process_job_isolation()`, `bind_subprocess_to_job()`, `register_process()`, `unregister_process()` *(+2 more)* |
-| `processing.py` | 1273 | Radio & TV Segmenter v3.3.29 — processing responsibilities. | `RuntimeSetupWorker`, `ProcessingMixin` |
+| `processing.py` | 1272 | Radio & TV Segmenter v3.3.29 — processing responsibilities. | `RuntimeSetupWorker`, `ProcessingMixin` |
 | `project_data_purge_dialog.py` | 169 | Modal dialog allowing users to selectively clear/purge pr... | `ProjectDataPurgeDialog` |
 | `project_export.py` | 458 | Radio & TV Story Segmenter — Unified Project & Media Expo... | `ProjectExportMixin` |
 | `project_lifecycle.py` | 992 | Radio & TV Story Segmenter — Project Lifecycle & Persiste... | `ProjectLifecycleMixin` |
@@ -140,7 +141,7 @@
 | `roadmap_manager.py` | 259 | roadmap_manager.py — Automated Roadmap & N-1 Sliding-Wind... | `RoadmapManager`, `get_current_app_version()`, `main()` |
 | `runtime_manager.py` | 989 |  | `RuntimeManager`, `register_process()`, `unregister_process()`, `kill_all_subprocesses()` *(+1 more)* |
 | `scripts/capture_guide_screenshots.py` | 152 | Programmatic headless screenshot generator for RTVS3 user... | `MockCaptureMainWindow`, `capture_widget()`, `main()` |
-| `scripts/dev_check.py` | 497 | scripts/dev_check.py - Ultra-Fast Pre-Flight Development ... | `check_syntax()`, `check_typing_stubs()`, `check_preview_sync()`, `check_modular_budget()` *(+6 more)* |
+| `scripts/dev_check.py` | 496 | scripts/dev_check.py - Ultra-Fast Pre-Flight Development ... | `check_syntax()`, `check_typing_stubs()`, `check_preview_sync()`, `check_modular_budget()` *(+6 more)* |
 | `scripts/generate_pyi_stubs.py` | 214 | generate_pyi_stubs.py — Automated Interface Typing Stub (... | `StubTransformer`, `generate_stub_source()`, `get_large_modules()`, `generate_stub_file()` *(+1 more)* |
 | `scripts/generate_symbol_index.py` | 380 | generate_symbol_index.py — Fast AST Symbol Indexer & Repo... | `parse_function_signature()`, `analyze_file()`, `scan_repository()`, `generate_index_markdown()` *(+4 more)* |
 | `scripts/log_summary.py` | 150 | log_summary.py — Compact Error & Exception Extraction Engine | `is_project_frame()`, `extract_log_summary()`, `main()` |
@@ -192,7 +193,7 @@
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 856 | Radio & TV Segmenter v3.10.37-beta — transcript story res... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 856 | Radio & TV Segmenter v3.10.38-beta — transcript story res... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 655 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -220,21 +221,21 @@
 
 ## Detailed Symbol Catalog
 
-### `RadioTVSegmenter.py` (686 lines)
-*Radio & TV Segmenter — v3.10.37-beta*
-- **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–583):
+### `RadioTVSegmenter.py` (684 lines)
+*Radio & TV Segmenter — v3.10.38-beta*
+- **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–581):
   *Main application window for Radio & TV Segmenter.*
-  - `__init__(self)` [L178-L355]
-  - `_setup_shortcuts_and_actions(self)` [L357-L404] — *Register customizable QShortcut and QAction objects on MainWindow.*
-  - `handle_external_open_request(self, file_path)` [L406-L431] — *Called when another instance attempts to open a project file in single-instance mode.*
-  - `load_persistent_settings(self)` [L433-L528] — *Loads all persistent user preferences from QSettings into MainWindow attributes.*
-  - `toggle_transcript_auto_scroll(self, checked)` [L530-L540] — *Toggle transcript auto-scrolling during playback and persist setting.*
-  - `changeEvent(self, event)` [L542-L549] — *Handle window state changes (e.g. maximize, restore, minimize) safely.*
-  - `dragEnterEvent(self, event)` [L551-L558]
-  - `dragMoveEvent(self, event)` [L560-L567]
-  - `dropEvent(self, event)` [L569-L583]
+  - `__init__(self)` [L178-L353]
+  - `_setup_shortcuts_and_actions(self)` [L355-L402] — *Register customizable QShortcut and QAction objects on MainWindow.*
+  - `handle_external_open_request(self, file_path)` [L404-L429] — *Called when another instance attempts to open a project file in single-instance mode.*
+  - `load_persistent_settings(self)` [L431-L526] — *Loads all persistent user preferences from QSettings into MainWindow attributes.*
+  - `toggle_transcript_auto_scroll(self, checked)` [L528-L538] — *Toggle transcript auto-scrolling during playback and persist setting.*
+  - `changeEvent(self, event)` [L540-L547] — *Handle window state changes (e.g. maximize, restore, minimize) safely.*
+  - `dragEnterEvent(self, event)` [L549-L556]
+  - `dragMoveEvent(self, event)` [L558-L565]
+  - `dropEvent(self, event)` [L567-L581]
 - **Functions**:
-  - `main()` [L586-L682]
+  - `main()` [L584-L680]
 
 ### `audio_normalization.py` (477 lines)
 *Radio & TV Story Segmenter — Audio Loudness Probing & Normalization Engine.*
@@ -293,30 +294,33 @@
   - `export_local_backup(target_path, settings_store, shortcuts_mgr, main_window)` [L370-L385] — *Writes a verified state backup archive to a local file.*
   - `restore_local_backup(source_path, main_window, settings_store, shortcuts_mgr)` [L388-L413] — *Restores settings and configurations from a local backup file.*
 
-### `batch_dialog.py` (702 lines)
+### `batch_dialog.py` (739 lines)
 *Radio & TV Story Segmenter — Batch Processing Dialog & Droppable File List.*
-- **class `BatchFileListWidget(QListWidget)`** (lines 43–149):
-  - `__init__(self, parent)` [L46-L53]
-  - `dragEnterEvent(self, event)` [L55-L64]
-  - `dragMoveEvent(self, event)` [L66-L74]
-  - `dragLeaveEvent(self, event)` [L76-L79]
-  - `dropEvent(self, event)` [L81-L91]
-  - `paintEvent(self, event)` [L93-L149]
-- **class `BatchProcessingDialog(QDialog)`** (lines 151–690):
-  - `__init__(self, parent)` [L152-L428]
-  - `eventFilter(self, watched, event)` [L430-L446]
-  - `_load_saved_options(self)` [L448-L508]
-  - `save_options_to_settings(self, as_default)` [L510-L544]
-  - `reset_options_to_defaults(self)` [L546-L586]
-  - `_on_start_clicked(self)` [L588-L590]
-  - `dragEnterEvent(self, event)` [L592-L599]
-  - `dragMoveEvent(self, event)` [L601-L608]
-  - `dropEvent(self, event)` [L610-L618]
-  - `add_paths(self, paths)` [L620-L634]
-  - `add_files(self)` [L636-L648]
-  - `choose_output(self)` [L650-L655]
-  - `choose_transcripts_output(self)` [L657-L667]
-  - `auto_detect_options(self)` [L669-L690] — *Auto-detect available options based on imported file extensions.*
+- **class `BatchFileListWidget(QListWidget)`** (lines 91–197):
+  - `__init__(self, parent)` [L94-L101]
+  - `dragEnterEvent(self, event)` [L103-L112]
+  - `dragMoveEvent(self, event)` [L114-L122]
+  - `dragLeaveEvent(self, event)` [L124-L127]
+  - `dropEvent(self, event)` [L129-L139]
+  - `paintEvent(self, event)` [L141-L197]
+- **class `BatchProcessingDialog(QDialog)`** (lines 199–727):
+  - `__init__(self, parent)` [L200-L481]
+  - `eventFilter(self, watched, event)` [L483-L499]
+  - `_load_saved_options(self)` [L501-L561]
+  - `save_options_to_settings(self, as_default)` [L563-L597]
+  - `reset_options_to_defaults(self)` [L599-L639]
+  - `_on_start_clicked(self)` [L641-L643]
+  - `dragEnterEvent(self, event)` [L645-L652]
+  - `dragMoveEvent(self, event)` [L654-L661]
+  - `dropEvent(self, event)` [L663-L671]
+  - `add_paths(self, paths)` [L673-L684]
+  - `add_files(self)` [L686-L699]
+  - `choose_output(self)` [L701-L706]
+  - `choose_transcripts_output(self)` [L708-L718]
+  - `auto_detect_options(self)` [L720-L727] — *Ensure media batch export options remain enabled for supported media queues.*
+- **Functions**:
+  - `is_supported_batch_media(path)` [L51-L53] — *Return True if *path* has a supported audio/video media extension.*
+  - `collect_batch_media_paths(paths, existing_paths)` [L56-L88] — *Expand files/folders into deduplicated media paths and count skipped non-media files.*
 
 ### `benchmark.py` (216 lines)
 *Radio & TV Story Segmenter — Performance & Speed Benchmark Engine.*
@@ -411,23 +415,48 @@
   - `bump_all(new_version, dry_run, plugins)` [L199-L464] — *Execute synchronous version updates across all checklist targets.*
   - `main()` [L466-L510]
 
-### `cache_manager.py` (716 lines)
+### `cache_manager.py` (927 lines)
 *Radio & TV Segmenter — Cache management, disk usage scanning, and purging utilities.*
-- **class `ClearCacheDialog(QDialog)`** (lines 549–716):
+- **class `ClearCacheDialog(QDialog)`** (lines 622–927):
   *Dialog for inspecting disk cache sizes and clearing temporary data.*
-  - `__init__(self, parent, language, project_dirs, auto_refresh)` [L552-L563]
-  - `_init_ui(self)` [L565-L655]
-  - `refresh_stats(self)` [L657-L681]
-  - `_on_clear_all(self)` [L683-L687]
-  - `_on_clear_selected(self)` [L689-L700]
-  - `_do_purge(self, clear_thumbs, clear_waves, clear_audio)` [L702-L716]
+  - `__init__(self, parent, language, project_dirs, auto_refresh, include_global_caches, include_settings_dirs)` [L625-L650]
+  - `_init_ui(self)` [L652-L742]
+  - `_build_scan_dirs(self)` [L744-L748]
+  - `_set_busy_state(self, busy, status_text, is_error)` [L750-L763]
+  - `_apply_stats(self, stats)` [L765-L788]
+  - `_start_worker(self, worker)` [L790-L800]
+  - `refresh_stats(self)` [L802-L827]
+  - `_on_scan_finished(self, stats, gen)` [L829-L834]
+  - `_on_purge_finished(self, files_deleted, bytes_freed, stats, gen)` [L836-L847]
+  - `_on_worker_error(self, error_msg, gen)` [L849-L854]
+  - `_cleanup_workers(self)` [L856-L867]
+  - `accept(self)` [L869-L871]
+  - `reject(self)` [L873-L875]
+  - `closeEvent(self, event)` [L877-L879]
+  - `_on_clear_all(self)` [L881-L885]
+  - `_on_clear_selected(self)` [L887-L898]
+  - `_do_purge(self, clear_thumbs, clear_waves, clear_audio)` [L900-L927]
 - **Functions**:
   - `register_active_thumbnail_dir(path)` [L45-L54] — *Register an active thumbnail directory so cache cleanup routines will never touch it.*
   - `unregister_active_thumbnail_dir(path)` [L57-L66] — *Unregister an active thumbnail directory when the project or session closes.*
   - `get_active_thumbnail_dirs()` [L69-L72] — *Return a copy of currently registered active thumbnail directories.*
   - `cleanup_old_thumbnail_cache(max_age_hours, active_dir, exclude_dirs, blocking, base_dir)` [L76-L204] — *Purge temporary thumbnail directories older than max_age_hours in a background thread.*
-  - `get_cache_disk_usage(project_dirs, include_global_caches, include_settings_dirs)` [L207-L403] — *Scan and compute disk usage for all temporary cache stores across appdata, temp dirs, and project folders.*
-  - `purge_caches(clear_thumbnails, clear_waveforms, clear_audio_extracts, project_dirs, include_global_caches)` [L406-L546] — *Purge requested cache stores safely from disk.*
+  - `collect_settings_project_dirs()` [L207-L229] — *Collect candidate project directories from QSettings on the GUI thread.*
+  - `get_cache_disk_usage(project_dirs, include_global_caches, include_settings_dirs, cancel_check)` [L232-L445] — *Scan and compute disk usage for all temporary cache stores across appdata, temp dirs, and project folders.*
+  - `purge_caches(clear_thumbnails, clear_waveforms, clear_audio_extracts, project_dirs, include_global_caches, cancel_check)` [L448-L619] — *Purge requested cache stores safely from disk.*
+
+### `cache_workers.py` (146 lines)
+*Radio & TV Segmenter — Background QThread workers for ClearCacheDialog.*
+- **class `CacheScanWorker(QThread)`** (lines 61–93):
+  *Background worker that scans temporary cache disk usage.*
+  - `__init__(self, project_dirs, include_global_caches, include_settings_dirs, parent)` [L67-L77]
+  - `run(self)` [L79-L93]
+- **class `CachePurgeWorker(QThread)`** (lines 96–146):
+  *Background worker that purges selected caches and rescans remaining disk usage.*
+  - `__init__(self, clear_thumbnails, clear_waveforms, clear_audio_extracts, purge_project_dirs, scan_project_dirs, include_global_caches, include_settings_dirs, parent)` [L102-L120]
+  - `run(self)` [L122-L146]
+- **Functions**:
+  - `detach_cache_worker(worker, wait_ms)` [L15-L58] — *Safely interrupt, disconnect, and wait/detach an active cache worker thread.*
 
 ### `comment_widgets.py` (350 lines)
 *comment_widgets.py - Range-Anchored Comments Panel & Comment Editor Widgets*
@@ -595,23 +624,23 @@
 *Modular diagnostic test mixin components for the RTVS Test Runner.*
 - **Public Exports (`__all__`)**: DiagnosticExportWordPressCoreMixin, DiagnosticExportWordPressUploadMixin, DiagnosticExportWordPressMediaMixin, DiagnosticExportPipelineMixin, DiagnosticCloudStorageTestsMixin, DiagnosticVoiceAndMediaTestsMixin, DiagnosticSystemRuntimeTestsMixin, DiagnosticBatchExportTestsMixin, DiagnosticEditingWorkflowTestsMixin, DiagnosticEditorGuidesAndDawTestsMixin, DiagnosticEditorStoryUiTestsMixin
 
-### `diagnostics/batch_export_tests.py` (469 lines)
+### `diagnostics/batch_export_tests.py` (465 lines)
 *Batch processing, drag-and-drop ingestion, PDF, and DAW export structure tests.*
-- **class `DiagnosticBatchExportTestsMixin`** (lines 15–469):
+- **class `DiagnosticBatchExportTestsMixin`** (lines 15–465):
   - `_test_batch_unified_transcripts_directory_export(self, item)` [L16-L184]
-  - `_test_batch_drag_and_drop_ingestion_and_event_handling(self, item)` [L186-L300]
-  - `_test_unified_export_destinations_and_youtube_auth_integrity(self, item)` [L302-L369]
-  - `_test_pdf_transcript_export_and_bold_speaker_labels(self, item)` [L371-L426]
-  - `_test_exporter_structure_invariant_tests(self, item)` [L428-L469]
+  - `_test_batch_drag_and_drop_ingestion_and_event_handling(self, item)` [L186-L296]
+  - `_test_unified_export_destinations_and_youtube_auth_integrity(self, item)` [L298-L365]
+  - `_test_pdf_transcript_export_and_bold_speaker_labels(self, item)` [L367-L422]
+  - `_test_exporter_structure_invariant_tests(self, item)` [L424-L465]
 
-### `diagnostics/cloud_storage_tests.py` (604 lines)
+### `diagnostics/cloud_storage_tests.py` (683 lines)
 *Plugin interface, project persistence, cache management, YouTube & backup diagnostic tests.*
-- **class `DiagnosticCloudStorageTestsMixin`** (lines 15–604):
+- **class `DiagnosticCloudStorageTestsMixin`** (lines 15–683):
   - `_test_plugin_interface_sandbox_testing(self, item)` [L16-L199]
   - `_test_project_file_integrity_and_portable_path_resolution(self, item)` [L201-L305]
-  - `_test_temporary_cache_management_and_storage_inspection(self, item)` [L307-L414] — *Validates cache usage stats calculation, preview categorization, and cache purging.*
-  - `_test_youtube_data_api_and_direct_video_upload_engine(self, item)` [L416-L491] — *Validates YouTube Zero-Auth manual export packaging (MP4, thumbnail, SRT, metadata .txt with chapters & speakers).*
-  - `_test_comprehensive_local_and_cloud_backup_and_restore_engine(self, item)` [L493-L604] — *Validates state serialization, SHA-256 verification, local backup roundtrip, and cloud payload integrity.*
+  - `_test_temporary_cache_management_and_storage_inspection(self, item)` [L307-L493] — *Validates cache usage stats calculation, preview categorization, and cache purging.*
+  - `_test_youtube_data_api_and_direct_video_upload_engine(self, item)` [L495-L570] — *Validates YouTube Zero-Auth manual export packaging (MP4, thumbnail, SRT, metadata .txt with chapters & speakers).*
+  - `_test_comprehensive_local_and_cloud_backup_and_restore_engine(self, item)` [L572-L683] — *Validates state serialization, SHA-256 verification, local backup roundtrip, and cloud payload integrity.*
 
 ### `diagnostics/editing_workflow_tests.py` (590 lines)
 *Fades, translation routing, speaker dialog flow, story bounds, sync, and split/join tests.*
@@ -1052,70 +1081,68 @@
 ### `installer/pyinstaller/torch_dll_hook.py` (70 lines)
 *PyInstaller runtime hook for Windows ML/native DLL resolution.*
 
-### `media_batch.py` (1907 lines)
+### `media_batch.py` (1865 lines)
 *Radio & TV Segmenter v1.1.1 — media batch responsibilities.*
-- **class `MediaBatchMixin`** (lines 24–1907):
-  - `probe_media_duration(self, path)` [L25-L39] — *Probe duration locally so video timelines can be populated immediately.*
-  - `_track_worker_thread(self, thread)` [L41-L53] — *Keep a strong reference to active worker threads so Python GC never destroys them while executing.*
-  - `stop_waveform_worker(self, timeout_ms)` [L55-L86] — *Stop the current waveform worker completely before replacing it or closing.*
-  - `_effective_thumbnail_density(self, density)` [L88-L95]
-  - `start_video_thumbnail_generation(self, force_regenerate, density)` [L97-L243]
-  - `_video_thumbnail_progress(self, pct)` [L245-L253]
-  - `_video_thumbnail_thread_finished(self)` [L255-L263]
-  - `_cached_thumbnails_loaded(self, items, req_key, eff_density, expected_count)` [L265-L283]
-  - `_video_thumbnails_finished(self, items, req_key)` [L285-L300]
-  - `stop_video_thumbnail_worker(self, timeout_ms)` [L302-L334]
-  - `regenerate_waveform(self)` [L336-L357] — *Force recalculation of waveform peaks by clearing disk cache and restarting generation.*
-  - `regenerate_video_thumbnails(self, density)` [L359-L396] — *Force regeneration of video filmstrip thumbnails (optionally updating density preset).*
-  - `load_waveform_async(self, force_regenerate)` [L398-L455]
-  - `_waveform_progress(self, partial_peaks, pps, pct)` [L457-L465]
-  - `_waveform_finished(self, peaks, cancelled)` [L467-L484]
-  - `_waveform_thread_finished(self)` [L486-L490]
-  - `open_batch_processing_dialog(self)` [L492-L597]
-  - `_batch_next_media(self)` [L599-L716]
-  - `_batch_next_document(self)` [L718-L746]
-  - `_batch_document_error(self, msg)` [L748-L757] — *Handles document batch translation errors safely.*
-  - `_load_user_preferences(self)` [L759-L842]
-  - `set_thumbnail_position(self, position)` [L844-L848]
-  - `_remember_saved_project(self, path)` [L850-L881] — *Remember only projects that have actually been saved.*
-  - `_dialog_directory(self, fallback)` [L883-L895]
-  - `_remember_open_directory(self, path)` [L897-L904]
-  - `_sync_startup_project_actions(self)` [L906-L912] — *Synchronize the Project Settings startup radio/check actions.*
-  - `set_startup_project_mode(self, mode)` [L914-L920] — *Set the startup project policy.*
-  - `restore_last_opened(self)` [L922-L1062] — *Apply startup policy and offer recovery from a newer autosave snapshot.*
-  - `toggle_speaker_labels(self, checked)` [L1064-L1069]
-  - `toggle_colorize_speaker_labels(self, checked)` [L1071-L1078]
-  - `toggle_timestamps(self, checked)` [L1080-L1087]
-  - `toggle_milliseconds(self, checked)` [L1089-L1096]
-  - `toggle_waveform_view(self, checked)` [L1098-L1102]
-  - `toggle_thumbnail_view(self, checked)` [L1104-L1108]
-  - `choose_default_project_directory(self)` [L1110-L1125]
-  - `open_document_path(self, path)` [L1127-L1162]
-  - `open_clear_cache_dialog(self)` [L1164-L1177]
-  - `open_manage_cached_media_dialog(self)` [L1179-L1182]
-  - `redownload_current_project_remote_media(self)` [L1184-L1195]
-  - `open_glossary_dialog(self)` [L1197-L1201] — *Edit persistent terminology used by every ASR and translation backend.*
-  - `_save_glossary(self)` [L1203-L1210]
-  - `apply_glossary_to_current_transcript(self, entries)` [L1212-L1244] — *Apply glossary rules and contextual name resolution to the active transcript with Undo support.*
-  - `add_to_glossary(self, text)` [L1246-L1266]
-  - `prompt_add_alternate_spelling(self, alternate_text)` [L1268-L1311] — *Prompt user for the preferred glossary spelling that `alternate_text` should map to.*
-  - `apply_glossary_to_whisper_context(self)` [L1313-L1324]
-  - `add_custom_speaker_to_glossary(self, name)` [L1326-L1328]
-  - `set_language(self, language, persist)` [L1330-L1351]
-  - `_apply_localization(self)` [L1353-L1390]
-  - `update_story_segment_terminology(self)` [L1392-L1479] — *Update all user-facing labels and tooltips using active vocabulary settings.*
-  - `open_document(self)` [L1481-L1535]
-  - `export_text_file(self)` [L1537-L1545]
-  - `open_media(self)` [L1547-L1556]
-  - `prepare_for_new_media(self)` [L1558-L1591] — *Checks for unsaved changes before loading new media.*
-  - `_batch_media_error(self, message)` [L1593-L1615]
-  - `_get_batch_project_target_path(self, base_name)` [L1617-L1644] — *Determines consistent target .rtvs project file path during batch processing.*
-  - `_batch_save_project_file(self)` [L1646-L1661] — *Saves project .rtvs to dedicated directory structure during batch processing.*
-  - `_batch_export_current(self)` [L1663-L1747] — *Handles automatic export or project saving during batch processing.*
-  - `load_media_file(self, filename, source, restore_adjacent_project)` [L1749-L1866]
-  - `update_active_media_source(self)` [L1868-L1901] — *Update media player source and refresh waveform when normalization state changes.*
-  - `open_audio(self)` [L1903-L1904]
-  - `handle_media_drop(self, filename)` [L1906-L1907]
+- **class `MediaBatchMixin`** (lines 25–1865):
+  - `probe_media_duration(self, path)` [L26-L40] — *Probe duration locally so video timelines can be populated immediately.*
+  - `_track_worker_thread(self, thread)` [L42-L54] — *Keep a strong reference to active worker threads so Python GC never destroys them while executing.*
+  - `stop_waveform_worker(self, timeout_ms)` [L56-L87] — *Stop the current waveform worker completely before replacing it or closing.*
+  - `_effective_thumbnail_density(self, density)` [L89-L96]
+  - `start_video_thumbnail_generation(self, force_regenerate, density)` [L98-L244]
+  - `_video_thumbnail_progress(self, pct)` [L246-L254]
+  - `_video_thumbnail_thread_finished(self)` [L256-L264]
+  - `_cached_thumbnails_loaded(self, items, req_key, eff_density, expected_count)` [L266-L284]
+  - `_video_thumbnails_finished(self, items, req_key)` [L286-L301]
+  - `stop_video_thumbnail_worker(self, timeout_ms)` [L303-L335]
+  - `regenerate_waveform(self)` [L337-L358] — *Force recalculation of waveform peaks by clearing disk cache and restarting generation.*
+  - `regenerate_video_thumbnails(self, density)` [L360-L397] — *Force regeneration of video filmstrip thumbnails (optionally updating density preset).*
+  - `load_waveform_async(self, force_regenerate)` [L399-L456]
+  - `_waveform_progress(self, partial_peaks, pps, pct)` [L458-L466]
+  - `_waveform_finished(self, peaks, cancelled)` [L468-L485]
+  - `_waveform_thread_finished(self)` [L487-L491]
+  - `open_batch_processing_dialog(self)` [L493-L596]
+  - `_batch_next_media(self)` [L598-L715]
+  - `_load_user_preferences(self)` [L717-L800]
+  - `set_thumbnail_position(self, position)` [L802-L806]
+  - `_remember_saved_project(self, path)` [L808-L839] — *Remember only projects that have actually been saved.*
+  - `_dialog_directory(self, fallback)` [L841-L853]
+  - `_remember_open_directory(self, path)` [L855-L862]
+  - `_sync_startup_project_actions(self)` [L864-L870] — *Synchronize the Project Settings startup radio/check actions.*
+  - `set_startup_project_mode(self, mode)` [L872-L878] — *Set the startup project policy.*
+  - `restore_last_opened(self)` [L880-L1020] — *Apply startup policy and offer recovery from a newer autosave snapshot.*
+  - `toggle_speaker_labels(self, checked)` [L1022-L1027]
+  - `toggle_colorize_speaker_labels(self, checked)` [L1029-L1036]
+  - `toggle_timestamps(self, checked)` [L1038-L1045]
+  - `toggle_milliseconds(self, checked)` [L1047-L1054]
+  - `toggle_waveform_view(self, checked)` [L1056-L1060]
+  - `toggle_thumbnail_view(self, checked)` [L1062-L1066]
+  - `choose_default_project_directory(self)` [L1068-L1083]
+  - `open_document_path(self, path)` [L1085-L1120]
+  - `open_clear_cache_dialog(self)` [L1122-L1135]
+  - `open_manage_cached_media_dialog(self)` [L1137-L1140]
+  - `redownload_current_project_remote_media(self)` [L1142-L1153]
+  - `open_glossary_dialog(self)` [L1155-L1159] — *Edit persistent terminology used by every ASR and translation backend.*
+  - `_save_glossary(self)` [L1161-L1168]
+  - `apply_glossary_to_current_transcript(self, entries)` [L1170-L1202] — *Apply glossary rules and contextual name resolution to the active transcript with Undo support.*
+  - `add_to_glossary(self, text)` [L1204-L1224]
+  - `prompt_add_alternate_spelling(self, alternate_text)` [L1226-L1269] — *Prompt user for the preferred glossary spelling that `alternate_text` should map to.*
+  - `apply_glossary_to_whisper_context(self)` [L1271-L1282]
+  - `add_custom_speaker_to_glossary(self, name)` [L1284-L1286]
+  - `set_language(self, language, persist)` [L1288-L1309]
+  - `_apply_localization(self)` [L1311-L1348]
+  - `update_story_segment_terminology(self)` [L1350-L1437] — *Update all user-facing labels and tooltips using active vocabulary settings.*
+  - `open_document(self)` [L1439-L1493]
+  - `export_text_file(self)` [L1495-L1503]
+  - `open_media(self)` [L1505-L1514]
+  - `prepare_for_new_media(self)` [L1516-L1549] — *Checks for unsaved changes before loading new media.*
+  - `_batch_media_error(self, message)` [L1551-L1573]
+  - `_get_batch_project_target_path(self, base_name)` [L1575-L1602] — *Determines consistent target .rtvs project file path during batch processing.*
+  - `_batch_save_project_file(self)` [L1604-L1619] — *Saves project .rtvs to dedicated directory structure during batch processing.*
+  - `_batch_export_current(self)` [L1621-L1705] — *Handles automatic export or project saving during batch processing.*
+  - `load_media_file(self, filename, source, restore_adjacent_project)` [L1707-L1824]
+  - `update_active_media_source(self)` [L1826-L1859] — *Update media player source and refresh waveform when normalization state changes.*
+  - `open_audio(self)` [L1861-L1862]
+  - `handle_media_drop(self, filename)` [L1864-L1865]
 
 ### `model_cleanup_dialog.py` (468 lines)
 *Manage Models dialog and shared runtime cleanup helpers for Radio & TV Segmenter.*
@@ -2064,43 +2091,43 @@
   - `get_registered_processes()` [L152-L154] — *Return a snapshot list of currently registered processes.*
   - `terminate_all_registered_processes()` [L160-L184] — *Terminate and wait on all active child processes upon application close.*
 
-### `processing.py` (1273 lines)
+### `processing.py` (1272 lines)
 *Radio & TV Segmenter v3.3.29 — processing responsibilities.*
 - **class `RuntimeSetupWorker(QThread)`** (lines 56–85):
   *Runs runtime_manager.ensure_environment() off the GUI thread, so that*
   - `__init__(self, runtime_mgr, feature, parent, ensure_kwargs)` [L64-L69]
   - `cancel(self)` [L71-L72]
   - `run(self)` [L74-L85]
-- **class `ProcessingMixin(TranscriptionProcessingMixin, DiarizationProcessingMixin, StoryDetectionProcessingMixin)`** (lines 92–1272):
+- **class `ProcessingMixin(TranscriptionProcessingMixin, DiarizationProcessingMixin, StoryDetectionProcessingMixin)`** (lines 92–1271):
   - `_ensure_runtime_environment_responsive(self, feature, **ensure_kwargs)` [L103-L193] — *Make sure the isolated venv for `feature` is ready before*
-  - `cancel_current_process(self)` [L195-L329]
-  - `update_skip_stage_button_visibility(self)` [L331-L341] — *Show or hide the 'Skip Stage' button based on active pipeline state.*
-  - `skip_current_pipeline_stage(self)` [L343-L391] — *Cancel the active pipeline stage and advance directly to the next queued stage.*
-  - `commit_story_change(self, old_stories, new_stories, description)` [L393-L408]
-  - `apply_story_selection_indices(self, selected_rows, seek)` [L410-L499]
-  - `on_timeline_story_clicked(self, index)` [L501-L511] — *Handle user clicking a story region directly on the timeline canvas.*
-  - `story_selection_changed(self)` [L513-L530]
-  - `handle_timeline_multi_selection(self, selected_indices)` [L532-L543]
-  - `set_tools_actions_enabled(self, enabled)` [L545-L581]
-  - `stop_story_detection_worker(self, timeout_ms)` [L583-L606] — *Cancel Story Detection and wait for its QThread to finish.*
-  - `stop_all_processing(self, timeout_ms)` [L608-L623] — *Stop every local processing job before changing media/projects or exiting.*
-  - `confirm_stop_processing_for_media_change(self)` [L625-L653]
-  - `worker_thread_finished(self)` [L655-L657]
-  - `_get_pipeline_stage_default(self, key, model_installed)` [L659-L674] — *Return remembered Run Processing checkbox state for a stage.*
-  - `_save_pipeline_stage_prefs(self, stage_states)` [L676-L683] — *Persist user-chosen Run Processing checkbox defaults without clobbering already-complete stages.*
-  - `start_full_auto_pipeline(self)` [L685-L843] — *Open a chooser for the processing stages to run, then run them in order.*
-  - `_confirm_pipeline_rerun_if_needed(self, stages, parent)` [L845-L914] — *Look ahead at stages about to run in a pipeline. If any have already*
-  - `_run_next_selected_processing(self)` [L916-L996]
-  - `start_transcribe_and_diarize(self)` [L998-L1017]
-  - `_processing_choice(self, kind)` [L1019-L1058] — *Return: run, continue, start_over, or cancel based on current state.*
-  - `_worker_command(self, args)` [L1060-L1079] — *Return (executable, args, env_overrides) for the local AI worker,*
-  - `_resolve_worker_command(self, args)` [L1081-L1128] — *Return (executable, args, env_overrides) for the local AI worker.*
-  - `_apply_worker_env_overrides(self, process, env_overrides)` [L1131-L1167] — *Applies extra environment variables (e.g. GPU device selection, SSL certs,*
-  - `_download_model_and_continue_transcription(self, model_name, label)` [L1169-L1202] — *Asynchronously download a missing model with responsive in-dialog progress and auto-resume.*
-  - `_on_transcription_dl_progress(self, pct, msg)` [L1204-L1214]
-  - `_on_transcription_dl_cancel(self)` [L1216-L1223]
-  - `_on_transcription_dl_finished(self, err)` [L1225-L1258]
-  - `_on_transcription_dl_thread_cleanup(self)` [L1260-L1272]
+  - `cancel_current_process(self)` [L195-L328]
+  - `update_skip_stage_button_visibility(self)` [L330-L340] — *Show or hide the 'Skip Stage' button based on active pipeline state.*
+  - `skip_current_pipeline_stage(self)` [L342-L390] — *Cancel the active pipeline stage and advance directly to the next queued stage.*
+  - `commit_story_change(self, old_stories, new_stories, description)` [L392-L407]
+  - `apply_story_selection_indices(self, selected_rows, seek)` [L409-L498]
+  - `on_timeline_story_clicked(self, index)` [L500-L510] — *Handle user clicking a story region directly on the timeline canvas.*
+  - `story_selection_changed(self)` [L512-L529]
+  - `handle_timeline_multi_selection(self, selected_indices)` [L531-L542]
+  - `set_tools_actions_enabled(self, enabled)` [L544-L580]
+  - `stop_story_detection_worker(self, timeout_ms)` [L582-L605] — *Cancel Story Detection and wait for its QThread to finish.*
+  - `stop_all_processing(self, timeout_ms)` [L607-L622] — *Stop every local processing job before changing media/projects or exiting.*
+  - `confirm_stop_processing_for_media_change(self)` [L624-L652]
+  - `worker_thread_finished(self)` [L654-L656]
+  - `_get_pipeline_stage_default(self, key, model_installed)` [L658-L673] — *Return remembered Run Processing checkbox state for a stage.*
+  - `_save_pipeline_stage_prefs(self, stage_states)` [L675-L682] — *Persist user-chosen Run Processing checkbox defaults without clobbering already-complete stages.*
+  - `start_full_auto_pipeline(self)` [L684-L842] — *Open a chooser for the processing stages to run, then run them in order.*
+  - `_confirm_pipeline_rerun_if_needed(self, stages, parent)` [L844-L913] — *Look ahead at stages about to run in a pipeline. If any have already*
+  - `_run_next_selected_processing(self)` [L915-L995]
+  - `start_transcribe_and_diarize(self)` [L997-L1016]
+  - `_processing_choice(self, kind)` [L1018-L1057] — *Return: run, continue, start_over, or cancel based on current state.*
+  - `_worker_command(self, args)` [L1059-L1078] — *Return (executable, args, env_overrides) for the local AI worker,*
+  - `_resolve_worker_command(self, args)` [L1080-L1127] — *Return (executable, args, env_overrides) for the local AI worker.*
+  - `_apply_worker_env_overrides(self, process, env_overrides)` [L1130-L1166] — *Applies extra environment variables (e.g. GPU device selection, SSL certs,*
+  - `_download_model_and_continue_transcription(self, model_name, label)` [L1168-L1201] — *Asynchronously download a missing model with responsive in-dialog progress and auto-resume.*
+  - `_on_transcription_dl_progress(self, pct, msg)` [L1203-L1213]
+  - `_on_transcription_dl_cancel(self)` [L1215-L1222]
+  - `_on_transcription_dl_finished(self, err)` [L1224-L1257]
+  - `_on_transcription_dl_thread_cleanup(self)` [L1259-L1271]
 
 ### `project_data_purge_dialog.py` (169 lines)
 *Modal dialog allowing users to selectively clear/purge project components.*
@@ -2608,7 +2635,7 @@
   - `capture_widget(widget, output_path, size)` [L72-L87] — *Render a QWidget to a high-resolution PNG image file capped at max 850px width.*
   - `main()` [L90-L148]
 
-### `scripts/dev_check.py` (497 lines)
+### `scripts/dev_check.py` (496 lines)
 *scripts/dev_check.py - Ultra-Fast Pre-Flight Development & AI Safety Gate*
 - **Functions**:
   - `check_syntax()` [L34-L45] — *Compiles all tracked python files in root and scripts.*
@@ -2620,11 +2647,11 @@
   - `_iter_direct_nodes(stmts)` [L141-L153] — *Yield AST nodes inside *stmts* without descending into nested def/class definitions.*
   - `check_qt_orphan_widget_flashes(root_dir)` [L156-L281] — *Static AST guard: flag setVisible(non-False) / setRowVisible(..., non-False) on unparented*
   - `_iter_prod_py_files(root_dir)` [L284-L293]
-  - `check_mainwindow_contracts(root_dir)` [L296-L363] — *Static contract guard: verify MainWindow mixin self.<method>() and main_window/app/owner calls exist.*
-  - `check_qt_safety_hygiene(root_dir)` [L366-L393] — *Static guard: QDialog classes starting QThread/Worker must handle closeEvent & reject/done; no unguarded QPixmap().scaled().*
-  - `check_windows_and_frozen_hygiene(root_dir)` [L396-L437] — *Static guard: Windows subprocess CREATE_NO_WINDOW flags and frozen-safe diagnostic tests.*
-  - `check_regression_tests()` [L440-L448] — *Executes change-aware Tier 2 diagnostic test suite.*
-  - `main()` [L451-L493]
+  - `check_mainwindow_contracts(root_dir)` [L296-L362] — *Static contract guard: verify MainWindow mixin self.<method>() and main_window/app/owner calls exist.*
+  - `check_qt_safety_hygiene(root_dir)` [L365-L392] — *Static guard: QDialog classes starting QThread/Worker must handle closeEvent & reject/done; no unguarded QPixmap().scaled().*
+  - `check_windows_and_frozen_hygiene(root_dir)` [L395-L436] — *Static guard: Windows subprocess CREATE_NO_WINDOW flags and frozen-safe diagnostic tests.*
+  - `check_regression_tests()` [L439-L447] — *Executes change-aware Tier 2 diagnostic test suite.*
+  - `main()` [L450-L492]
 
 ### `scripts/generate_pyi_stubs.py` (214 lines)
 *generate_pyi_stubs.py — Automated Interface Typing Stub (.pyi) Generator.*
@@ -3582,7 +3609,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (856 lines)
-*Radio & TV Segmenter v3.10.37-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.10.38-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–855):
   - `render_transcript(self)` [L64-L471]

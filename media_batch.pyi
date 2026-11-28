@@ -5,6 +5,7 @@ from PySide6.QtCore import Qt, QThread, QTimer
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QGroupBox, QLabel, QMessageBox, QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QTableWidget, QHeaderView, QAbstractItemView
 from prs_shared import *
+from batch_dialog import is_supported_batch_media
 from background_workers import get_video_thumbnail_cache_dir, read_video_thumbnail_cache, invalidate_video_thumbnail_cache, VideoThumbnailCacheLoader
 
 class MediaBatchMixin:
@@ -61,12 +62,6 @@ class MediaBatchMixin:
         ...
 
     def _batch_next_media(self):
-        ...
-
-    def _batch_next_document(self):
-        ...
-
-    def _batch_document_error(self, msg):
         ...
 
     def _load_user_preferences(self):

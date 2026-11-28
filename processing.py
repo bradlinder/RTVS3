@@ -199,7 +199,6 @@ class ProcessingMixin(
         if self.batch_active:
             self.batch_active = False
             self.batch_queue = []
-            self.batch_document_queue = []
             self.pipeline_queue = []
             self.pipeline_active = False
             self.pipeline_start_monotonic = None

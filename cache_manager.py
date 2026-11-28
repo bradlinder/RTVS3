@@ -204,10 +204,36 @@ def cleanup_old_thumbnail_cache(
     return t
 
 
+def collect_settings_project_dirs() -> list:
+    """Collect candidate project directories from QSettings on the GUI thread."""
+    p_candidates = []
+    if QSettings is None:
+        return p_candidates
+    try:
+        settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
+        for key in ("default_project_directory", "last_saved_project_path", "last_open_directory"):
+            val = settings.value(key)
+            if val:
+                p_candidates.append(val)
+        recents = settings.value("recent_projects")
+        if recents:
+            if isinstance(recents, str):
+                try:
+                    recents = json.loads(recents)
+                except Exception:
+                    recents = [recents]
+            if isinstance(recents, (list, tuple)):
+                p_candidates.extend(recents)
+    except Exception:
+        pass
+    return p_candidates
+
+
 def get_cache_disk_usage(
     project_dirs=None,
     include_global_caches: bool = True,
     include_settings_dirs: bool = True,
+    cancel_check=None,
 ) -> dict:
     """Scan and compute disk usage for all temporary cache stores across appdata, temp dirs, and project folders.
     
@@ -221,28 +247,22 @@ def get_cache_disk_usage(
     stats = {}
     search_dirs = []
 
-    # Auto-populate search dirs from QSettings if not provided
+    def _cancelled() -> bool:
+        if cancel_check is None:
+            return False
+        try:
+            return bool(cancel_check())
+        except Exception:
+            return False
+
+    # Auto-populate search dirs from QSettings if requested
     p_candidates = list(project_dirs or [])
     if include_settings_dirs:
-        try:
-            settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
-            for key in ("default_project_directory", "last_saved_project_path", "last_open_directory"):
-                val = settings.value(key)
-                if val:
-                    p_candidates.append(val)
-            recents = settings.value("recent_projects")
-            if recents:
-                if isinstance(recents, str):
-                    try:
-                        recents = json.loads(recents)
-                    except Exception:
-                        recents = [recents]
-                if isinstance(recents, (list, tuple)):
-                    p_candidates.extend(recents)
-        except Exception:
-            pass
+        p_candidates.extend(collect_settings_project_dirs())
 
     for p in p_candidates:
+        if _cancelled():
+            break
         if p:
             try:
                 pd = Path(p).resolve()
@@ -268,9 +288,13 @@ def get_cache_disk_usage(
 
     seen_thumb_files = set()
     for thumb_dir in thumb_locations:
+        if _cancelled():
+            break
         if thumb_dir.exists() and thumb_dir.is_dir():
             try:
                 for p in thumb_dir.rglob("*"):
+                    if _cancelled():
+                        break
                     if p.is_file() and str(p.resolve()) not in seen_thumb_files:
                         seen_thumb_files.add(str(p.resolve()))
                         thumb_files += 1
@@ -300,9 +324,13 @@ def get_cache_disk_usage(
 
     seen_peak_files = set()
     for peaks_dir in peak_locations:
+        if _cancelled():
+            break
         if peaks_dir.exists() and peaks_dir.is_dir():
             try:
                 for p in peaks_dir.rglob("*.peaks"):
+                    if _cancelled():
+                        break
                     if p.is_file() and str(p.resolve()) not in seen_peak_files:
                         seen_peak_files.add(str(p.resolve()))
                         peaks_files += 1
@@ -314,11 +342,13 @@ def get_cache_disk_usage(
                 pass
 
     # Scan any legacy .peaks directly in app cache root or active project folders
-    if include_global_caches:
+    if include_global_caches and not _cancelled():
         cache_root = get_app_data_dir() / "cache"
         if cache_root.exists() and cache_root.is_dir():
             try:
                 for p in cache_root.glob("*.peaks"):
+                    if _cancelled():
+                        break
                     if p.is_file() and str(p.resolve()) not in seen_peak_files:
                         seen_peak_files.add(str(p.resolve()))
                         peaks_files += 1
@@ -330,8 +360,12 @@ def get_cache_disk_usage(
                 pass
 
     for pd in search_dirs:
+        if _cancelled():
+            break
         try:
             for p in pd.glob("*.peaks"):
+                if _cancelled():
+                    break
                 if p.is_file() and str(p.resolve()) not in seen_peak_files:
                     seen_peak_files.add(str(p.resolve()))
                     peaks_files += 1
@@ -366,9 +400,13 @@ def get_cache_disk_usage(
         if a_cand not in audio_locations:
             audio_locations.append(a_cand)
     for audio_dir in audio_locations:
+        if _cancelled():
+            break
         if audio_dir.exists() and audio_dir.is_dir():
             try:
                 for p in audio_dir.rglob("*"):
+                    if _cancelled():
+                        break
                     if p.is_file():
                         audio_files += 1
                         try:
@@ -377,11 +415,15 @@ def get_cache_disk_usage(
                             pass
             except Exception:
                 pass
-    if include_global_caches:
+    if include_global_caches and not _cancelled():
         temp_dir = Path(tempfile.gettempdir())
         try:
             for pat in ("prs_tmp_*.wav", "rtvs_tmp_*.wav", "prs_extract_*.wav", "rtvs_diarization_*.wav", "rtvs_translate_*", "rtvs_wp_*"):
+                if _cancelled():
+                    break
                 for p in temp_dir.glob(pat):
+                    if _cancelled():
+                        break
                     if p.is_file():
                         audio_files += 1
                         try:
@@ -409,17 +451,28 @@ def purge_caches(
     clear_audio_extracts=True,
     project_dirs=None,
     include_global_caches: bool = True,
+    cancel_check=None,
 ) -> tuple[int, int]:
     """Purge requested cache stores safely from disk.
     
     Returns:
         (files_deleted, bytes_freed)
     """
+    def _cancelled() -> bool:
+        if cancel_check is None:
+            return False
+        try:
+            return bool(cancel_check())
+        except Exception:
+            return False
+
     freed_bytes = 0
     freed_files = 0
     search_dirs = []
     if project_dirs:
         for p in project_dirs:
+            if _cancelled():
+                return freed_files, freed_bytes
             if p:
                 try:
                     pd = Path(p).resolve()
@@ -430,7 +483,7 @@ def purge_caches(
                 except Exception:
                     pass
 
-    if clear_thumbnails:
+    if clear_thumbnails and not _cancelled():
         thumb_locations = (
             [
                 Path(tempfile.gettempdir()) / "radio_tv_story_segmenter_thumbnails",
@@ -444,9 +497,13 @@ def purge_caches(
                 thumb_locations.append(t_cand)
 
         for thumb_dir in thumb_locations:
+            if _cancelled():
+                return freed_files, freed_bytes
             if thumb_dir.exists():
                 try:
                     for p in list(thumb_dir.rglob("*")):
+                        if _cancelled():
+                            return freed_files, freed_bytes
                         if p.is_file():
                             try:
                                 sz = p.stat().st_size
@@ -459,7 +516,7 @@ def purge_caches(
                 except Exception:
                     pass
 
-    if clear_waveforms:
+    if clear_waveforms and not _cancelled():
         peak_locations = (
             [get_app_data_dir() / "cache" / "peaks"]
             if include_global_caches else []
@@ -470,9 +527,13 @@ def purge_caches(
                 peak_locations.append(p_cand)
 
         for peaks_dir in peak_locations:
+            if _cancelled():
+                return freed_files, freed_bytes
             if peaks_dir.exists():
                 try:
                     for p in list(peaks_dir.glob("*.peaks")):
+                        if _cancelled():
+                            return freed_files, freed_bytes
                         if p.is_file():
                             try:
                                 sz = p.stat().st_size
@@ -486,8 +547,12 @@ def purge_caches(
                     pass
 
         for pd in search_dirs:
+            if _cancelled():
+                return freed_files, freed_bytes
             try:
                 for p in list(pd.glob("*.peaks")):
+                    if _cancelled():
+                        return freed_files, freed_bytes
                     if p.is_file():
                         try:
                             sz = p.stat().st_size
@@ -499,7 +564,7 @@ def purge_caches(
             except Exception:
                 pass
 
-    if clear_audio_extracts:
+    if clear_audio_extracts and not _cancelled():
         audio_locations = (
             [
                 Path(tempfile.gettempdir()) / "prs_audio_extracts",
@@ -513,9 +578,13 @@ def purge_caches(
             if a_cand not in audio_locations:
                 audio_locations.append(a_cand)
         for audio_dir in audio_locations:
+            if _cancelled():
+                return freed_files, freed_bytes
             if audio_dir.exists():
                 try:
                     for p in list(audio_dir.rglob("*")):
+                        if _cancelled():
+                            return freed_files, freed_bytes
                         if p.is_file():
                             try:
                                 sz = p.stat().st_size
@@ -527,11 +596,15 @@ def purge_caches(
                     shutil.rmtree(audio_dir, ignore_errors=True)
                 except Exception:
                     pass
-        if include_global_caches:
+        if include_global_caches and not _cancelled():
             temp_dir = Path(tempfile.gettempdir())
             try:
                 for pat in ("prs_tmp_*.wav", "rtvs_tmp_*.wav", "prs_extract_*.wav", "rtvs_diarization_*.wav", "rtvs_translate_*", "rtvs_wp_*"):
+                    if _cancelled():
+                        return freed_files, freed_bytes
                     for p in list(temp_dir.glob(pat)):
+                        if _cancelled():
+                            return freed_files, freed_bytes
                         if p.is_file():
                             try:
                                 sz = p.stat().st_size
@@ -549,11 +622,25 @@ def purge_caches(
 class ClearCacheDialog(QDialog):
     """Dialog for inspecting disk cache sizes and clearing temporary data."""
 
-    def __init__(self, parent=None, language="en", project_dirs=None, auto_refresh=True):
+    def __init__(
+        self,
+        parent=None,
+        language="en",
+        project_dirs=None,
+        auto_refresh=True,
+        include_global_caches: bool = True,
+        include_settings_dirs: bool = True,
+    ):
         super().__init__(parent)
         self.language = language
         self.is_es = (language == "es")
-        self.project_dirs = project_dirs or []
+        self.project_dirs = list(project_dirs) if project_dirs else []
+        self._include_global_caches = bool(include_global_caches)
+        self._include_settings_dirs = bool(include_settings_dirs)
+        self._active_worker = None
+        self._workers = set()
+        self._is_closing = False
+        self._worker_gen = 0
         self.setWindowTitle("Limpiar caché temporal" if self.is_es else "Clear Temporary Cache")
         self.setMinimumWidth(500)
         self.setModal(True)
@@ -654,8 +741,28 @@ class ClearCacheDialog(QDialog):
         btn_layout.addWidget(self.btn_close)
         layout.addLayout(btn_layout)
 
-    def refresh_stats(self):
-        stats = get_cache_disk_usage(project_dirs=self.project_dirs)
+    def _build_scan_dirs(self) -> list:
+        dirs = list(self.project_dirs)
+        if self._include_settings_dirs:
+            dirs.extend(collect_settings_project_dirs())
+        return dirs
+
+    def _set_busy_state(self, busy: bool, status_text: str | None = None, is_error: bool = False):
+        for widget in (self.chk_thumbs, self.chk_waveforms, self.chk_audio):
+            widget.setEnabled(not busy)
+        if busy:
+            self.btn_clear_all.setEnabled(False)
+            self.btn_clear_sel.setEnabled(False)
+        if status_text is not None:
+            if busy:
+                self.lbl_status.setStyleSheet("color: #888888; font-weight: normal;")
+            elif is_error:
+                self.lbl_status.setStyleSheet("color: #c62828; font-weight: bold;")
+            else:
+                self.lbl_status.setStyleSheet("color: #2e7d32; font-weight: bold;")
+            self.lbl_status.setText(status_text)
+
+    def _apply_stats(self, stats: dict):
         t_stat = stats["thumbnails"]
         w_stat = stats["waveforms"]
         a_stat = stats["audio_extracts"]
@@ -680,6 +787,97 @@ class ClearCacheDialog(QDialog):
         self.btn_clear_all.setEnabled(has_data)
         self.btn_clear_sel.setEnabled(has_data)
 
+    def _start_worker(self, worker):
+        from cache_workers import detach_cache_worker
+
+        if self._active_worker is not None:
+            detach_cache_worker(self._active_worker)
+            self._workers.discard(self._active_worker)
+            self._active_worker = None
+        self._active_worker = worker
+        self._workers.add(worker)
+        worker.finished.connect(lambda w=worker: self._workers.discard(w))
+        worker.start()
+
+    def refresh_stats(self):
+        from cache_workers import CacheScanWorker
+
+        if self._is_closing:
+            return
+        self._worker_gen += 1
+        gen = self._worker_gen
+        scanning_lbl = "Escaneando..." if self.is_es else "Scanning..."
+        self.lbl_thumbs_size.setText(scanning_lbl)
+        self.lbl_waveforms_size.setText(scanning_lbl)
+        self.lbl_audio_size.setText(scanning_lbl)
+        self.lbl_total_val.setText(scanning_lbl)
+        self._set_busy_state(
+            True,
+            "Escaneando cachés temporales..." if self.is_es else "Scanning temporary caches...",
+        )
+
+        worker = CacheScanWorker(
+            project_dirs=self._build_scan_dirs(),
+            include_global_caches=self._include_global_caches,
+            include_settings_dirs=False,
+            parent=self,
+        )
+        worker.finished_scan.connect(lambda stats, g=gen: self._on_scan_finished(stats, g))
+        worker.failed_scan.connect(lambda err, g=gen: self._on_worker_error(err, g))
+        self._start_worker(worker)
+
+    def _on_scan_finished(self, stats: dict, gen: int):
+        if self._is_closing or gen != self._worker_gen:
+            return
+        self._active_worker = None
+        self._set_busy_state(False, "")
+        self._apply_stats(stats)
+
+    def _on_purge_finished(self, files_deleted: int, bytes_freed: int, stats: dict, gen: int):
+        if self._is_closing or gen != self._worker_gen:
+            return
+        self._active_worker = None
+        freed_str = format_byte_size(bytes_freed)
+        msg = (
+            f"Se liberaron exitosamente {freed_str} en {files_deleted} archivos."
+            if self.is_es else
+            f"Successfully freed {freed_str} across {files_deleted} files."
+        )
+        self._set_busy_state(False, msg)
+        self._apply_stats(stats)
+
+    def _on_worker_error(self, error_msg: str, gen: int):
+        if self._is_closing or gen != self._worker_gen:
+            return
+        self._active_worker = None
+        prefix = "Error de caché:" if self.is_es else "Cache operation error:"
+        self._set_busy_state(False, f"{prefix} {error_msg}", is_error=True)
+
+    def _cleanup_workers(self):
+        from cache_workers import detach_cache_worker
+
+        self._is_closing = True
+        self._worker_gen += 1
+        to_detach = list(self._workers)
+        if self._active_worker is not None and self._active_worker not in to_detach:
+            to_detach.append(self._active_worker)
+        self._workers.clear()
+        self._active_worker = None
+        for w in to_detach:
+            detach_cache_worker(w)
+
+    def accept(self):
+        self._cleanup_workers()
+        super().accept()
+
+    def reject(self):
+        self._cleanup_workers()
+        super().reject()
+
+    def closeEvent(self, event):
+        self._cleanup_workers()
+        super().closeEvent(event)
+
     def _on_clear_all(self):
         self.chk_thumbs.setChecked(True)
         self.chk_waveforms.setChecked(True)
@@ -700,17 +898,30 @@ class ClearCacheDialog(QDialog):
         self._do_purge(clear_thumbs=ct, clear_waves=cw, clear_audio=ca)
 
     def _do_purge(self, clear_thumbs: bool, clear_waves: bool, clear_audio: bool):
-        files_deleted, bytes_freed = purge_caches(
+        from cache_workers import CachePurgeWorker
+
+        if self._is_closing:
+            return
+        if self._active_worker is not None and self._active_worker.isRunning():
+            return
+        self._worker_gen += 1
+        gen = self._worker_gen
+        self._set_busy_state(
+            True,
+            "Limpiando cachés seleccionadas..." if self.is_es else "Clearing selected caches...",
+        )
+        worker = CachePurgeWorker(
             clear_thumbnails=clear_thumbs,
             clear_waveforms=clear_waves,
             clear_audio_extracts=clear_audio,
-            project_dirs=self.project_dirs,
+            purge_project_dirs=list(self.project_dirs),
+            scan_project_dirs=self._build_scan_dirs(),
+            include_global_caches=self._include_global_caches,
+            include_settings_dirs=False,
+            parent=self,
         )
-        self.refresh_stats()
-        freed_str = format_byte_size(bytes_freed)
-        msg = (
-            f"Se liberaron exitosamente {freed_str} en {files_deleted} archivos."
-            if self.is_es else
-            f"Successfully freed {freed_str} across {files_deleted} files."
+        worker.finished_purge.connect(
+            lambda files_del, bytes_freed, stats, g=gen: self._on_purge_finished(files_del, bytes_freed, stats, g)
         )
-        self.lbl_status.setText(msg)
+        worker.failed_purge.connect(lambda err, g=gen: self._on_worker_error(err, g))
+        self._start_worker(worker)

@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QTableWidget, QHeaderView, QAbstractItemView
 )
 from prs_shared import *
+from batch_dialog import is_supported_batch_media
 from background_workers import (
     get_video_thumbnail_cache_dir,
     read_video_thumbnail_cache,
@@ -500,7 +501,11 @@ class MediaBatchMixin:
 
         files = [dialog.files.item(i).text() for i in range(dialog.files.count())]
         if not files:
-            QMessageBox.warning(self, "Batch Processing", "Add at least one file.")
+            QMessageBox.warning(self, "Batch Processing", "Add at least one audio or video media file.")
+            return
+        files = [f for f in files if is_supported_batch_media(f)]
+        if not files:
+            QMessageBox.warning(self, "Batch Processing", "Add at least one supported audio or video media file.")
             return
 
         output = dialog.output.text().strip()
@@ -588,13 +593,7 @@ class MediaBatchMixin:
         self.lead_in_padding = self.batch_settings["story_pad"]
         self.translation_direction = self.batch_settings["translate_direction"]
 
-        # Auto-route between media processing and document translation
-        first_file = Path(files[0])
-        if first_file.suffix.lower() in {".txt", ".docx", ".pdf", ".html", ".htm", ".md"}:
-            self.batch_document_queue = list(files)
-            self._batch_next_document()
-        else:
-            self._batch_next_media()
+        self._batch_next_media()
 
     def _batch_next_media(self):
         import time
@@ -714,47 +713,6 @@ class MediaBatchMixin:
 
         except Exception as e:
             self._batch_media_error(f"Failed to process {current_file}: {str(e)}")
-
-    def _batch_next_document(self):
-        import time
-        if getattr(self, "batch_file_start_time", None):
-            self.batch_completed_durations.append(time.monotonic() - self.batch_file_start_time)
-            self.batch_file_start_time = None
-
-        if not hasattr(self, "batch_document_queue") or not self.batch_document_queue:
-            self.batch_active = False
-            self.batch_total_files = 0
-            self.batch_current_file_idx = 0
-            self.progress.hide()
-            self.cancel_button.hide()
-            self.set_processing_stage(None)
-            self.log_activity("[BATCH] All document batch processing completed.")
-            QMessageBox.information(self, "Batch Processing", "Batch document translation completed successfully!")
-            return
-
-        current_doc = self.batch_document_queue.pop(0)
-        self.batch_current_file_idx += 1
-        self.batch_file_start_time = time.monotonic()
-        self.log_activity(f"[BATCH] Translating document ({self.batch_current_file_idx} of {self.batch_total_files}): {current_doc}")
-        try:
-            if hasattr(self, "translate_document_file"):
-                self.translate_document_file(current_doc)
-            else:
-                self.log_activity(f"[BATCH] Processed {current_doc}")
-                QTimer.singleShot(50, self._batch_next_document)
-        except Exception as exc:
-            self._batch_document_error(f"Error translating {current_doc}: {exc}")
-
-    def _batch_document_error(self, msg):
-        """Handles document batch translation errors safely."""
-        self.log_activity(f"[BATCH] Document translation failed: {msg}")
-        self.progress.hide()
-        self.cancel_button.hide()
-        self.batch_document_state = None
-
-        # Reset active status so dialog reopening is not blocked
-        self.batch_active = False 
-        QTimer.singleShot(0, self._batch_next_document)
 
     def _load_user_preferences(self):
         self.language = str(self.settings_store.value("language", "en") or "en")

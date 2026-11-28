@@ -3,7 +3,7 @@
 Extracted from prs_shared.py as part of Phase 2 Modularization.
 
 Provides:
-- BatchFileListWidget: Drag-and-drop QListWidget supporting direct media/document drops.
+- BatchFileListWidget: Drag-and-drop QListWidget supporting direct audio/video media and folder drops.
 - BatchProcessingDialog: Multi-file batch transcription, diarization, and story segmentation dialog.
 """
 
@@ -38,6 +38,54 @@ from PySide6.QtWidgets import (
 
 from core_utils import make_dialog_maximizable, extract_dropped_file_paths
 from theme_tokens import ThemeTokens
+
+
+BATCH_SUPPORTED_MEDIA_EXTENSIONS: frozenset[str] = frozenset({
+    ".mp3", ".wav", ".m4a", ".aac", ".flac", ".ogg", ".oga", ".opus", ".wma",
+    ".aiff", ".aif", ".caf", ".amr", ".ac3", ".dts", ".ra", ".rm",
+    ".mp4", ".m4v", ".mov", ".mkv", ".avi", ".webm", ".wmv", ".mpg", ".mpeg",
+    ".3gp", ".3g2", ".ts", ".mts", ".m2ts", ".asf", ".flv",
+})
+
+
+def is_supported_batch_media(path: str | Path) -> bool:
+    """Return True if *path* has a supported audio/video media extension."""
+    return Path(path).suffix.lower() in BATCH_SUPPORTED_MEDIA_EXTENSIONS
+
+
+def collect_batch_media_paths(
+    paths: List[str] | tuple[str, ...],
+    existing_paths: Optional[set[str] | List[str] | tuple[str, ...]] = None,
+) -> tuple[list[str], int]:
+    """Expand files/folders into deduplicated media paths and count skipped non-media files."""
+    seen: set[str] = set(existing_paths or ())
+    added: list[str] = []
+    skipped_count = 0
+
+    def _consider_file(candidate: Path) -> None:
+        nonlocal skipped_count
+        key = str(candidate)
+        if not is_supported_batch_media(candidate):
+            skipped_count += 1
+            return
+        if key not in seen:
+            seen.add(key)
+            added.append(key)
+
+    for raw in paths or ():
+        if not raw:
+            continue
+        cleaned_str = str(raw).strip().strip('"').strip("'")
+        if not cleaned_str:
+            continue
+        p = Path(cleaned_str)
+        if p.is_file():
+            _consider_file(p)
+        elif p.is_dir():
+            for sub in sorted(p.rglob("*")):
+                if sub.is_file():
+                    _consider_file(sub)
+    return added, skipped_count
 
 
 class BatchFileListWidget(QListWidget):
@@ -157,7 +205,7 @@ class BatchProcessingDialog(QDialog):
         self.setAcceptDrops(True)
         
         layout = QVBoxLayout(self)
-        layout.addWidget(QLabel("Add media files or documents. Drag and drop files or folders directly into the list below."))
+        layout.addWidget(QLabel("Add audio or video media files. Drag and drop media files or folders directly into the list below."))
 
         # File List View
         self.files = BatchFileListWidget()
@@ -171,6 +219,11 @@ class BatchProcessingDialog(QDialog):
         row.addWidget(rem)
         row.addStretch()
         layout.addLayout(row)
+
+        self.skipped_notice_label = QLabel("", self)
+        self.skipped_notice_label.setWordWrap(True)
+        self.skipped_notice_label.setStyleSheet("color: #888888; font-size: 11px;")
+        layout.addWidget(self.skipped_notice_label)
 
         # Output / Project Directory Selector
         dir_group = QGroupBox("Target Save Location")
@@ -618,23 +671,21 @@ class BatchProcessingDialog(QDialog):
             event.ignore()
 
     def add_paths(self, paths):
-        for f in paths:
-            if not f:
-                continue
-            cleaned_str = str(f).strip().strip('"').strip("'")
-            if not cleaned_str:
-                continue
-            p = Path(cleaned_str)
-            if p.is_file() and not any(self.files.item(i).text() == str(p) for i in range(self.files.count())):
-                self.files.addItem(str(p))
-            elif p.is_dir():
-                for sub in sorted(p.rglob("*")):
-                    if sub.is_file() and not any(self.files.item(i).text() == str(sub) for i in range(self.files.count())):
-                        self.files.addItem(str(sub))
+        existing = {self.files.item(i).text() for i in range(self.files.count())}
+        added, skipped = collect_batch_media_paths(paths, existing_paths=existing)
+        for p in added:
+            self.files.addItem(p)
+        if skipped > 0:
+            self.skipped_notice_label.setText(
+                f"Skipped {skipped} non-media file(s) — only audio and video files are supported in batch processing."
+            )
+        elif added:
+            self.skipped_notice_label.setText("")
         self.auto_detect_options()
 
     def add_files(self):
-        filters = "All Supported Files (*.*)"
+        media_globs = " ".join(f"*{ext}" for ext in sorted(BATCH_SUPPORTED_MEDIA_EXTENSIONS))
+        filters = f"Audio & Video Media ({media_globs});;All Files (*.*)"
         parent = self.parent()
         settings = getattr(parent, "settings_store", None)
         default_dir = ""
@@ -642,7 +693,7 @@ class BatchProcessingDialog(QDialog):
             default_dir = str(settings.value("batch_add_files_directory", "") or "")
         if not default_dir:
             default_dir = getattr(parent, "_dialog_directory", lambda: "")()
-        files, _ = QFileDialog.getOpenFileNames(self, "Add Files", default_dir, filters)
+        files, _ = QFileDialog.getOpenFileNames(self, "Add Media Files", default_dir, filters)
         if files and settings is not None:
             settings.setValue("batch_add_files_directory", str(Path(files[0]).resolve().parent))
         self.add_paths(files)
@@ -667,27 +718,13 @@ class BatchProcessingDialog(QDialog):
             self.transcripts_output.setText(d)
 
     def auto_detect_options(self):
-        """Auto-detect available options based on imported file extensions."""
-        file_paths = [self.files.item(i).text() for i in range(self.files.count())]
-        
-        has_media = any(
-            Path(p).suffix.lower() in {
-                ".mp3", ".wav", ".m4a", ".flac", ".mp4", ".mov", ".mkv", ".avi", ".webm"
-            } for p in file_paths
-        )
-        has_docs = any(
-            Path(p).suffix.lower() in {
-                ".txt", ".docx", ".pdf", ".html", ".htm", ".md"
-            } for p in file_paths
-        )
-
-        # Adjust option controls depending on file types found in queue
-        self.include_speakers.setEnabled(has_media)
-        self.color_speakers.setEnabled(has_media and self.include_speakers.isChecked())
-        self.include_times.setEnabled(has_media)
-        self.fmt_srt.setEnabled(has_media)
-        self.fmt_vtt.setEnabled(has_media)
-        self.scope_combo.setEnabled(has_media)
+        """Ensure media batch export options remain enabled for supported media queues."""
+        self.include_speakers.setEnabled(True)
+        self.color_speakers.setEnabled(self.include_speakers.isChecked())
+        self.include_times.setEnabled(True)
+        self.fmt_srt.setEnabled(True)
+        self.fmt_vtt.setEnabled(True)
+        self.scope_combo.setEnabled(True)
 
 
 # ============================================================
